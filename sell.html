@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐼 Sell your account — Panda Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="floaters" id="floaters"></div>
+
+<header>
+  <nav>
+    <a href="index.html" class="logo"><span class="badge">🐼</span> Panda Store</a>
+    <div class="navlinks">
+      <a href="index.html#how">How it works</a>
+      <a href="index.html#listings">Marketplace</a>
+      <a href="index.html#reviews">Reviews</a>
+    </div>
+    <div class="nav-cta">
+      <a href="index.html" class="btn btn-ghost">← Back to marketplace</a>
+    </div>
+  </nav>
+</header>
+
+<section class="sell-hero">
+  <div class="wrap">
+    <div class="eyebrow" style="margin:0 auto 18px; width:fit-content;"><span class="pulse-dot"></span> Sellers earn in 24–48 hrs on average</div>
+    <h1>List your account, get <span class="accent" style="background:linear-gradient(100deg,var(--bamboo),var(--neon-cyan) 55%,var(--neon-pink));-webkit-background-clip:text;background-clip:text;color:transparent;">real offers</span> 💰🎮</h1>
+    <p>Tell us about your account below — the game, the rank, the skins, and your price range. Our team reviews every submission before it goes live, so give us the details that make it shine.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="form-shell">
+    <div class="form-shell-top">
+      <div class="dots"><span></span><span></span><span></span></div>
+      panda-store.com/sell-your-account
+    </div>
+
+    <div class="form-frame-wrap" id="formFrameWrap">
+      <div class="form-loading" id="formLoading">
+        <div class="spin"></div>
+        <span>Loading the seller form…</span>
+      </div>
+
+      <!--
+        HOW TO CONNECT YOUR OWN GOOGLE FORM
+        ------------------------------------
+        1. Create a Google Form with fields like:
+             • Your name
+             • WhatsApp number
+             • Game (short answer or dropdown: Free Fire, COD, Blood Strike, PUBG…)
+             • Account level / rank (short answer)
+             • Price range you're hoping for (short answer or dropdown)
+             • Describe your account & its features (PARAGRAPH / long answer —
+               this is the field where sellers explain skins, rank, rare items, etc.)
+        2. In Google Forms, go to Send → the "<>" embed icon → copy the iframe src URL.
+        3. Paste that URL below, replacing YOUR_FORM_ID.
+        4. Optional but recommended: in the Forms editor, click the palette icon
+           (top right) and set a dark background + a green accent color so the
+           form's own theme matches Panda Store instead of looking like plain
+           default Google Forms.
+      -->
+      <iframe
+        id="sellerForm"
+        src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true"
+        title="Panda Store seller submission form">
+        Loading…
+      </iframe>
+    </div>
+
+    <!-- shown once we detect the Google Form has been submitted -->
+    <div class="thankyou-stage" id="thankyouStage">
+      <div class="emoji">🐼✅</div>
+      <h3>Got it — thanks for the submission!</h3>
+      <p>We'll take a look at your account's features and your price range, and we'll contact you soon to move forward. 🎮💬</p>
+      <a href="index.html" class="btn btn-primary">Back to marketplace</a>
+    </div>
+
+    <div class="manual-confirm" id="manualConfirm">
+      <a onclick="showThankYou()">Already submitted the form? Tap here ✅</a>
+    </div>
+  </div>
+
+  <div class="sell-tips">
+    <div class="tip">
+      <div class="icon">📝</div>
+      <h4>Be specific</h4>
+      <p>List exact skins, rank, and level. Detailed listings get reviewed and priced faster.</p>
+    </div>
+    <div class="tip">
+      <div class="icon">💰</div>
+      <h4>Set a fair range</h4>
+      <p>Give a realistic price range — we'll help you land on a number buyers will actually pay.</p>
+    </div>
+    <div class="tip">
+      <div class="icon">📱</div>
+      <h4>Keep WhatsApp open</h4>
+      <p>Our team reaches out on WhatsApp once your submission is reviewed — usually within 24–48 hrs.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-bottom">
+      <span>© 2026 Panda Store. All rights reserved.</span>
+      <span>Made with 🐼 + 🎮 + a lot of energy drinks</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/script.js"></script>
+<script>
+  // hide the spinner once the iframe finishes its first real load
+  const iframe = document.getElementById('sellerForm');
+  const loading = document.getElementById('formLoading');
+  let loadCount = 0;
+
+  iframe.addEventListener('load', () => {
+    loadCount++;
+    if(loadCount === 1){
+      // first load = the form itself has rendered
+      loading.style.display = 'none';
+    } else if(loadCount > 1){
+      // second load = Google Forms navigated internally after a submit
+      showThankYou();
+    }
+  });
+
+  function showThankYou(){
+    document.getElementById('formFrameWrap').style.display = 'none';
+    document.getElementById('manualConfirm').style.display = 'none';
+    document.getElementById('thankyouStage').style.display = 'block';
+  }
+</script>
+</body>
+</html>
