@@ -3,263 +3,291 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐼 Panda Store — Buy, Sell & Review Gaming Accounts</title>
+<title>Panda Gaming Store — Verified Gaming Accounts</title>
+<meta name="description" content="Buy verified Free Fire, Call of Duty, PUBG Mobile, Blood Strike and Valorant accounts. Instant WhatsApp delivery, real inventories, honest pricing.">
+<meta name="theme-color" content="#070A11">
+<meta property="og:title" content="Panda Gaming Store — Verified Gaming Accounts">
+<meta property="og:description" content="Hand-checked gaming accounts with real inventories and instant WhatsApp delivery.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
 </head>
 <body>
 
-<div class="floaters" id="floaters"></div>
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
 
-<header>
-  <nav>
-    <div class="logo"><span class="badge">🐼</span> Panda Store</div>
-    <div class="navlinks">
-      <a href="#how">How it works</a>
-      <a href="#listings">Marketplace</a>
-      <a href="#reviews">Reviews</a>
-      <a href="#faq">FAQ</a>
-    </div>
-    <div class="nav-cta">
-      <a href="#" class="btn btn-ghost">Log in</a>
-      <a href="sell.html" class="btn btn-primary">🚀 Sell an account</a>
-    </div>
-  </nav>
-</header>
+<main>
 
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <div class="eyebrow"><span class="pulse-dot"></span> 12,400+ accounts traded safely</div>
-      <h1>Buy, sell & flex your <span class="accent">gaming accounts</span> 🎮🔥</h1>
-      <p class="lead">Panda Store is the marketplace for Free Fire 🔥, COD 🎯, Blood Strike 💥, PUBG 🪖 and more — verified sellers, real reviews ⭐, zero cap. Get in, level up, get out.</p>
-      <div class="hero-ctas">
-        <a href="#listings" class="btn btn-primary btn-lg">🛒 Browse accounts</a>
-        <a href="sell.html" class="btn btn-ghost btn-lg">💰 Start selling</a>
+  <!-- ============================ HERO ============================ -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow"><span class="pulse-dot"></span> <span data-announcement>Fresh drops every week</span></div>
+        <h1 id="heroHeadline">Level up without <span class="accent">the grind.</span></h1>
+        <p class="lead" id="heroSubline">
+          Hand-checked gaming accounts with real inventories, instant WhatsApp delivery and a support team that actually replies.
+        </p>
+        <div class="hero-ctas">
+          <a href="#marketplace" class="btn btn-primary btn-lg">Browse accounts</a>
+          <a href="/sell-account" class="btn btn-ghost btn-lg">Sell your account</a>
+        </div>
+        <div class="trust-row">
+          <div class="trust-item"><span class="n">100%</span> Verified listings</div>
+          <div class="trust-item"><span class="n">&lt;10 min</span> WhatsApp delivery</div>
+          <div class="trust-item"><span class="n">24 hrs</span> Post-sale support</div>
+        </div>
       </div>
-      <div class="trust-row">
-        <div class="trust-item"><span class="n">98%</span> positive reviews ⭐</div>
-        <div class="trust-item"><span class="n">6</span> games supported 🎮</div>
-        <div class="trust-item"><span class="n">24/7</span> panda support 🐼</div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="panda-orb"></div>
+        <div class="float-card card-a">
+          <div class="game-tag">🔥 FREE FIRE</div>
+          <div class="acc-name">Heroic · Full Wardrobe</div>
+          <div class="acc-stats"><span>Lv. 68</span><span>•</span><span>62 skins</span></div>
+          <div class="price" data-demo-price="28">₦44,800</div>
+        </div>
+        <div class="float-card card-b">
+          <div class="game-tag">🎯 CALL OF DUTY</div>
+          <div class="acc-name">Prestige 8 · Damascus</div>
+          <div class="acc-stats"><span>Lv. 300+</span><span>•</span><span>All ops</span></div>
+          <div class="price" data-demo-price="72.5">₦116,000</div>
+        </div>
+        <div class="float-card card-c">
+          <div class="game-tag">🛡️ PUBG MOBILE</div>
+          <div class="acc-name">Conqueror · Mythic Set</div>
+          <div class="acc-stats"><span>S14</span><span>•</span><span>Ace tier</span></div>
+          <div class="price" data-demo-price="41">₦65,600</div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <div class="hero-visual">
-      <div class="panda-orb"></div>
-      <div class="float-card card-a">
-        <div class="game-tag">🔥 FREE FIRE</div>
-        <div class="acc-name">Grandmaster Stack</div>
-        <div class="acc-stats"><span>Lv. 72</span><span>•</span><span>48 skins</span></div>
-        <div class="price">$34.99</div>
-      </div>
-      <div class="float-card card-b">
-        <div class="game-tag">🎯 CALL OF DUTY</div>
-        <div class="acc-name">Dark Ops Vault</div>
-        <div class="acc-stats"><span>Lv. 155</span><span>•</span><span>Rare camos</span></div>
-        <div class="price">$59.00</div>
-      </div>
-      <div class="float-card card-c">
-        <div class="game-tag">🪖 PUBG</div>
-        <div class="acc-name">Conqueror Elite</div>
-        <div class="acc-stats"><span>Season 12</span><span>•</span><span>Mythic set</span></div>
-        <div class="price">$45.50</div>
-      </div>
+  <!-- ========================== MARQUEE ========================== -->
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee-track" id="marquee">
+      <span>🔥 Free Fire</span>
+      <span>🎯 Call of Duty</span>
+      <span>💥 Blood Strike</span>
+      <span>🛡️ PUBG Mobile</span>
+      <span>⚔️ Valorant</span>
+      <span>🐼 Instant delivery</span>
+      <span>⭐ Verified sellers</span>
+      <span>🔒 Secure handover</span>
     </div>
   </div>
-</section>
 
-<div class="marquee-wrap">
-  <div class="marquee-track" id="marquee">
-    <span>🔥 Free Fire</span>
-    <span>🎯 Call of Duty</span>
-    <span>💥 Blood Strike</span>
-    <span>🪖 PUBG</span>
-    <span>⚔️ Valorant</span>
-    <span>🧟 Zombie Royale</span>
-    <span>🐼 more coming soon</span>
+  <!-- ========================= HOW IT WORKS ========================= -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">⚡ Three steps</div>
+        <h2>Buying takes minutes, not days</h2>
+        <p>No forms, no waiting rooms. Pick the account, accept the terms, and we hand it over on WhatsApp.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">01</span>
+          <div class="icon">🛒</div>
+          <h3>Pick your account</h3>
+          <p>Filter by game and browse real inventories with screenshots, level and rank for every listing.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">02</span>
+          <div class="icon">✅</div>
+          <h3>Accept the terms</h3>
+          <p>Read the short purchase terms and confirm. That unlocks the delivery code tied to your account.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <div class="icon">⚡</div>
+          <h3>Get it on WhatsApp</h3>
+          <p>One tap sends us your order with the code attached. Pay, receive the credentials, and you're in.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= MARKETPLACE ========================= -->
+  <section id="marketplace" style="background:linear-gradient(180deg,rgba(255,255,255,.02),transparent); border-top:1px solid var(--panel-line); border-bottom:1px solid var(--panel-line);">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">🔥 Live inventory</div>
+        <h2>Accounts ready to hand over</h2>
+        <p>Every listing below is in stock right now. Naira prices follow the store rate; the USD price is shown underneath.</p>
+      </div>
+
+      <div class="filter-bar" id="filterBar" role="tablist" aria-label="Filter by game"></div>
+      <div class="product-grid" id="productGrid">
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+        <div class="skeleton sk-card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== STATS =========================== -->
+  <div class="stats-band">
+    <div class="wrap stats-grid">
+      <div><div class="stat-num" id="statProducts">—</div><div class="stat-label">Accounts listed</div></div>
+      <div><div class="stat-num" id="statStock">—</div><div class="stat-label">Ready to deliver</div></div>
+      <div><div class="stat-num">4.9★</div><div class="stat-label">Average rating</div></div>
+      <div><div class="stat-num">&lt;10m</div><div class="stat-label">Average handover</div></div>
+    </div>
+  </div>
+
+  <!-- ========================== REVIEWS ========================== -->
+  <section id="reviews">
+    <div class="wrap">
+      <div class="section-head">
+        <div class="eyebrow">💬 Real buyers</div>
+        <h2>What the community says</h2>
+        <p>No bots, no fake stars — just players who got exactly what the listing promised.</p>
+      </div>
+
+      <div class="review-grid">
+        <div class="review-card">
+          <div class="review-top">
+            <div class="avatar">K</div>
+            <div><div class="review-name">Kayzo_FF</div><div class="review-sub">Bought a Free Fire account</div></div>
+          </div>
+          <div class="stars" style="color:var(--gold); font-size:.8rem; margin-bottom:10px;">★★★★★</div>
+          <p class="review-body">Paid on WhatsApp, got the credentials in under ten minutes. The inventory was exactly what the screenshots showed.</p>
+          <span class="review-verified">✓ VERIFIED PURCHASE</span>
+        </div>
+        <div class="review-card">
+          <div class="review-top">
+            <div class="avatar">N</div>
+            <div><div class="review-name">NovaStrikes</div><div class="review-sub">Sold a COD account</div></div>
+          </div>
+          <div class="stars" style="color:var(--gold); font-size:.8rem; margin-bottom:10px;">★★★★★</div>
+          <p class="review-body">Submitted my account at night, had a fair offer the next morning. No lowballing, no games — just a clean deal.</p>
+          <span class="review-verified">✓ VERIFIED SELLER</span>
+        </div>
+        <div class="review-card">
+          <div class="review-top">
+            <div class="avatar">R</div>
+            <div><div class="review-name">Ribbit_PUBG</div><div class="review-sub">Bought a PUBG account</div></div>
+          </div>
+          <div class="stars" style="color:var(--gold); font-size:.8rem; margin-bottom:10px;">★★★★★</div>
+          <p class="review-body">Smooth handover and they stayed on chat while I changed the login details. That's the part nobody else does.</p>
+          <span class="review-verified">✓ VERIFIED PURCHASE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CTA ============================ -->
+  <section>
+    <div class="wrap">
+      <div class="cta-band">
+        <h2>Ready to skip the grind?</h2>
+        <p>Browse the live inventory, or turn an idle account into cash today.</p>
+        <div class="cta-btns">
+          <a href="#marketplace" class="btn btn-primary btn-lg">Browse accounts</a>
+          <a href="/sell-account" class="btn btn-ghost btn-lg">Sell your account</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<!-- ====================== TERMS MODAL ====================== -->
+<div class="modal-scrim" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="termsTitle">Purchase terms</h3>
+        <p>Please read before we release an account.</p>
+      </div>
+      <button class="modal-x" data-close-terms aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="terms-text" id="termsBody">Loading terms…</div>
+    </div>
+    <div class="modal-foot">
+      <a href="/#marketplace" class="btn btn-primary btn-block" data-close-terms>Got it</a>
+    </div>
   </div>
 </div>
 
-<section id="how">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">⚡ SUPER SIMPLE</div>
-      <h2>How Panda Store works</h2>
-      <p>Three steps between you and your next favorite account. No cap, no scams, just gains.</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="icon">🛍️</div>
-        <h3>1. Browse & pick</h3>
-        <p>Filter by game, rank, skins or price and find the account that matches your grind. Every listing shows real stats and a full write-up.</p>
-      </div>
-      <div class="step">
-        <div class="icon">🆔</div>
-        <h3>2. Copy your Order ID</h3>
-        <p>Click a listing, copy the Order ID shown at the bottom, and send it to us on WhatsApp with one tap — we'll confirm price and payment there.</p>
-      </div>
-      <div class="step">
-        <div class="icon">⭐</div>
-        <h3>3. Rate & review</h3>
-        <p>Once your purchase is complete, leave a review to help the next player choose smart. Top-rated sellers get a shiny verified badge 🏅.</p>
-      </div>
-    </div>
-  </div>
-</section>
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: 'marketplace' });
+  const s = state.settings || {};
 
-<section id="listings" style="background:var(--bg-soft); border-top:1px solid var(--panel-line); border-bottom:1px solid var(--panel-line);">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">🔥 TRENDING NOW</div>
-      <h2>Fresh accounts on the block</h2>
-      <p>A taste of what's live right now. Click any listing to see full details and grab its Order ID.</p>
-    </div>
-    <div class="games-filter">
-      <span class="chip active" data-game="all">All games</span>
-      <span class="chip" data-game="FREE FIRE">🔥 Free Fire</span>
-      <span class="chip" data-game="CALL OF DUTY">🎯 COD</span>
-      <span class="chip" data-game="BLOOD STRIKE">💥 Blood Strike</span>
-      <span class="chip" data-game="PUBG MOBILE">🪖 PUBG</span>
-      <span class="chip" data-game="VALORANT">⚔️ Valorant</span>
-    </div>
-    <div class="listing-grid" id="listingGrid">
-      <!-- rendered by assets/script.js from the PRODUCTS array -->
-    </div>
-  </div>
-</section>
+  // Live copy from settings
+  if (s.heroHeadline) {
+    document.getElementById('heroHeadline').innerHTML = A.esc(s.heroHeadline).replace(/grind\.?$/i, '<span class="accent">grind.</span>');
+  }
+  if (s.heroSubline) document.getElementById('heroSubline').textContent = s.heroSubline;
 
-<div class="stats-band">
-  <div class="wrap stats-grid">
-    <div><div class="stat-num">12.4K+</div><div class="stat-label">Accounts sold 🎮</div></div>
-    <div><div class="stat-num">8,900</div><div class="stat-label">Active players 🐼</div></div>
-    <div><div class="stat-num">4.9★</div><div class="stat-label">Average rating</div></div>
-    <div><div class="stat-num">100%</div><div class="stat-label">WhatsApp verified 🔒</div></div>
-  </div>
-</div>
+  // Demo hero prices follow the admin exchange rate
+  document.querySelectorAll('[data-demo-price]').forEach((el) => {
+    el.textContent = A.nairaFrom(el.getAttribute('data-demo-price'));
+  });
 
-<section id="reviews">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">💬 REAL TALK</div>
-      <h2>What the community says</h2>
-      <p>No bots, no fake stars — just gamers reviewing gamers.</p>
-    </div>
-    <div class="review-grid">
-      <div class="review-card">
-        <div class="review-top">
-          <div class="avatar">🦊</div>
-          <div><div class="review-name">Kayzo_FF</div><div class="review-sub">Bought a Free Fire account</div></div>
-        </div>
-        <div class="stars">★★★★★</div>
-        <p class="review-body">Copied the Order ID, sent it on WhatsApp, and had my account in 10 minutes 🔥 seller was super chill. 10/10 would grind again.</p>
-      </div>
-      <div class="review-card">
-        <div class="review-top">
-          <div class="avatar">🐺</div>
-          <div><div class="review-name">NovaStrikes</div><div class="review-sub">Sold a COD account</div></div>
-        </div>
-        <div class="stars">★★★★★</div>
-        <p class="review-body">Filled the seller form in 2 minutes and got a WhatsApp message the same day 💰 Panda Store just gets it.</p>
-      </div>
-      <div class="review-card">
-        <div class="review-top">
-          <div class="avatar">🐸</div>
-          <div><div class="review-name">Ribbit_PUBG</div><div class="review-sub">Bought a PUBG account</div></div>
-        </div>
-        <div class="stars">★★★★☆</div>
-        <p class="review-body">Smooth transfer, great support team 🐼 knocked off one star only because I wanted MORE skins lol. Will definitely be back.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  const grid = document.getElementById('productGrid');
+  const filterBar = document.getElementById('filterBar');
+  const products = state.products || [];
 
-<section>
-  <div class="wrap">
-    <div class="cta-band">
-      <h2>Ready to level up your inventory? 🎮✨</h2>
-      <p>Join thousands of gamers buying, selling and reviewing accounts on Panda Store.</p>
-      <div class="cta-btns">
-        <a href="#listings" class="btn btn-primary btn-lg">🛒 Start browsing</a>
-        <a href="sell.html" class="btn btn-ghost btn-lg">🐼 Sell your account</a>
-      </div>
-    </div>
-  </div>
-</section>
+  const games = ['all', ...new Set(products.map((p) => p.game).filter(Boolean))];
+  let activeGame = 'all';
 
-<footer id="faq">
-  <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <div class="logo"><span class="badge">🐼</span> Panda Store</div>
-        <p>The marketplace built for gamers, by gamers. Buy, sell and review accounts for all your favorite titles — safely.</p>
-      </div>
-      <div class="foot-col">
-        <h4>Marketplace</h4>
-        <a href="#listings">🔥 Free Fire</a>
-        <a href="#listings">🎯 Call of Duty</a>
-        <a href="#listings">💥 Blood Strike</a>
-        <a href="#listings">🪖 PUBG</a>
-      </div>
-      <div class="foot-col">
-        <h4>Company</h4>
-        <a href="#">About us</a>
-        <a href="#">Trust & safety</a>
-        <a href="#">Careers</a>
-        <a href="#">Contact</a>
-      </div>
-      <div class="foot-col">
-        <h4>Support</h4>
-        <a href="#">Help center</a>
-        <a href="sell.html">Sell an account</a>
-        <a href="#">Report an issue</a>
-        <a href="#">Community rules</a>
-      </div>
-    </div>
-    <div class="foot-bottom">
-      <span>© 2026 Panda Store. All rights reserved.</span>
-      <span>Made with 🐼 + 🎮 + a lot of energy drinks</span>
-    </div>
-  </div>
-</footer>
+  function paintFilters() {
+    filterBar.innerHTML = games
+      .map((g) => {
+        const label = g === 'all' ? 'All games' : g;
+        return `<button class="chip ${g === activeGame ? 'active' : ''}" data-game="${A.esc(g)}" role="tab" aria-selected="${g === activeGame}">${A.esc(label)}</button>`;
+      })
+      .join('');
+  }
 
-<!-- ===== BUYER DETAIL PANEL ===== -->
-<div class="detail-overlay" id="detailOverlay">
-  <div class="detail-panel">
-    <div class="detail-head">
-      <div class="eyebrow" style="margin:0;">📦 Listing details</div>
-      <button class="detail-close" onclick="closeDetail()">✕</button>
-    </div>
-    <div class="detail-thumb" id="detailThumb"></div>
-    <div class="detail-body">
-      <div class="detail-tag" id="detailTag"></div>
-      <h3 class="detail-title" id="detailTitle"></h3>
-      <div class="detail-meta" id="detailMeta"></div>
-      <p class="detail-desc" id="detailDesc"></p>
+  function paintGrid() {
+    const list = activeGame === 'all' ? products : products.filter((p) => p.game === activeGame);
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty-state">
+        <div style="font-size:34px;margin-bottom:10px;">🎮</div>
+        <strong>No accounts in this game yet</strong>
+        <p style="margin:8px 0 16px;font-size:.86rem;">Message us and we'll source one for you.</p>
+        <a class="btn btn-primary btn-sm" href="#" data-wa>Request an account</a>
+      </div>`;
+      document.querySelectorAll('[data-wa]').forEach((el) => {
+        if (!el.getAttribute('href')) {
+          el.setAttribute('href', A.waLink('Hi! I am looking for an account — can you help me find one?'));
+          el.setAttribute('target', '_blank');
+        }
+      });
+      return;
+    }
+    grid.innerHTML = list.map(A.productCard).join('');
+  }
 
-      <div class="detail-price-row">
-        <div class="detail-price" id="detailPrice"></div>
-        <div class="stars" id="detailRating"></div>
-      </div>
+  paintFilters();
+  paintGrid();
 
-      <!-- the Order ID sits at the bottom of the page, as requested -->
-      <div class="order-box">
-        <div class="label">🆔 Your order ID</div>
-        <div class="order-id-row">
-          <div class="order-id" id="orderId">PS-000</div>
-          <button class="btn btn-ghost copy-btn" onclick="copyOrderId()">📋 Copy</button>
-        </div>
-        <p class="order-hint">Copy this ID, then tap the button below — it opens WhatsApp with the ID and listing already filled in for you.</p>
-      </div>
+  filterBar.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    activeGame = chip.dataset.game;
+    paintFilters();
+    paintGrid();
+  });
 
-      <div class="detail-actions">
-        <a href="#" id="waButton" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">🟢 Send order on WhatsApp</a>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="copied-toast" id="copiedToast">✅ Order ID copied!</div>
-
-<script src="assets/script.js"></script>
+  // Stats
+  document.getElementById('statProducts').textContent = products.length;
+  document.getElementById('statStock').textContent = products.filter((p) => Number(p.stock) > 0).length;
+})();
+</script>
 </body>
 </html>

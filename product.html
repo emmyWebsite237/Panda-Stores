@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account details — Panda Gaming Store</title>
+<meta name="description" content="Full details, real screenshots and instant WhatsApp handover for this gaming account.">
+<meta name="theme-color" content="#070A11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
+
+<main>
+  <div class="wrap">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a><span class="sep">/</span>
+      <a href="/#marketplace">Marketplace</a><span class="sep">/</span>
+      <span id="crumbName">Account</span>
+    </nav>
+  </div>
+
+  <div class="wrap" id="detailHost">
+    <!-- skeleton -->
+    <div class="detail-layout">
+      <div class="skeleton" style="aspect-ratio:4/3;border-radius:22px;"></div>
+      <div style="display:grid;gap:14px;align-content:start;">
+        <div class="skeleton" style="height:18px;width:120px;border-radius:6px;"></div>
+        <div class="skeleton" style="height:38px;width:80%;border-radius:8px;"></div>
+        <div class="skeleton" style="height:96px;border-radius:16px;"></div>
+        <div class="skeleton" style="height:120px;border-radius:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" id="relatedWrap" hidden>
+    <div style="border-top:1px solid var(--panel-line); padding-top:clamp(28px,4vw,44px); margin-bottom:clamp(30px,5vw,60px);">
+      <h2 style="font-size:clamp(1.2rem,2.6vw,1.6rem); margin-bottom:16px;">More from this game</h2>
+      <div class="related-grid" id="relatedGrid"></div>
+    </div>
+  </div>
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<!-- ==================== TERMS / BUY MODAL ==================== -->
+<div class="modal-scrim" id="buyModal" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="buyTitle">Before you buy</h3>
+        <p>Confirm the details and accept the purchase terms.</p>
+      </div>
+      <button class="modal-x" id="buyClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="summary-box">
+        <strong id="summaryTitle">—</strong>
+        <span id="summaryPrice">—</span>
+      </div>
+      <div class="terms-text" id="termsBody">Loading terms…</div>
+    </div>
+    <div class="modal-foot">
+      <p class="agree-note">By tapping “I Agree” you accept the purchase terms above, including the no-refund policy on change of mind.</p>
+      <button class="btn btn-whatsapp btn-lg btn-block" id="agreeBtn" disabled>
+        <span id="agreeLabel">I Agree — continue to WhatsApp</span>
+      </button>
+      <span class="wait-hint" id="waitHint">Please take a moment to read the terms…</span>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: 'marketplace' });
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || window.location.pathname.split('/').filter(Boolean).pop();
+  const host = document.getElementById('detailHost');
+
+  if (!id) return showNotFound('No account selected.');
+
+  let data;
+  try {
+    data = await A.api(`/api/products/${encodeURIComponent(id)}`);
+  } catch (err) {
+    return showNotFound(err.status === 404 ? 'That account is no longer listed.' : 'We could not load this account right now.');
+  }
+
+  const p = data.product;
+  const cfg = data.settings || state.settings || {};
+  const rate = Number(cfg.usdToNgn) || 0;
+  const ngn = A.money((Number(p.priceUsd) || 0) * rate);
+
+  document.title = `${p.title} — ${cfg.storeName || 'Panda Gaming Store'}`;
+  document.getElementById('crumbName').textContent = p.title;
+
+  const images = (p.images && p.images.length ? p.images : [p.cover]).filter(Boolean);
+  if (p.cover && images[0] !== p.cover) {
+    const i = images.indexOf(p.cover);
+    if (i > 0) images.splice(i, 1);
+    images.unshift(p.cover);
+  }
+
+  const stock = Number(p.stock) || 0;
+  const stockClass = stock === 0 ? 'out' : stock <= 2 ? 'low' : '';
+  const stockLabel = stock === 0 ? 'Sold out' : stock <= 2 ? `Only ${stock} left` : `${stock} available`;
+  const soldOut = stock === 0 || p.inStock === false;
+
+  host.innerHTML = `
+    <div class="detail-layout">
+      <div class="gallery">
+        <div class="gallery-stage" id="stage">
+          <div class="gallery-track" id="track">
+            ${images.map((src, i) => `<div class="gallery-slide"><img src="${A.esc(src)}" alt="${A.esc(p.title)} — image ${i + 1}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} draggable="false"></div>`).join('')}
+          </div>
+          <button class="gallery-nav prev" id="prevBtn" aria-label="Previous image" ${images.length < 2 ? 'disabled' : ''}>‹</button>
+          <button class="gallery-nav next" id="nextBtn" aria-label="Next image" ${images.length < 2 ? 'disabled' : ''}>›</button>
+          <span class="gallery-count" id="counter">1 / ${images.length}</span>
+        </div>
+        <div class="gallery-dots" id="dots" role="tablist" aria-label="Choose image">
+          ${images.map((_, i) => `<button data-i="${i}" class="${i === 0 ? 'active' : ''}" aria-label="Image ${i + 1}"></button>`).join('')}
+        </div>
+        ${images.length > 1 ? `<div class="gallery-thumbs" id="thumbs">${images.map((src, i) => `<img src="${A.esc(src)}" data-i="${i}" class="${i === 0 ? 'active' : ''}" alt="Thumbnail ${i + 1}">`).join('')}</div>` : ''}
+      </div>
+
+      <div class="detail-info">
+        <div class="product-game">${A.esc(p.game || 'Gaming account')}</div>
+        <h1>${A.esc(p.title)}</h1>
+
+        <div class="detail-availability">
+          <span class="stock-pill ${stockClass}"><span class="dot"></span>${stockLabel}</span>
+          <span class="badge" style="position:static;">Code on delivery</span>
+        </div>
+
+        <div class="price-panel">
+          <div class="price-main">${ngn}</div>
+          <div class="price-sub">
+            <span class="usd">${A.usd(p.priceUsd)}</span>
+            <span>·</span>
+            <span>Rate: ₦${Number(rate).toLocaleString('en-NG')} / $1</span>
+          </div>
+          <div class="price-note">${A.esc(cfg.currencyNote || 'Naira price is calculated at the store rate. Final amount is confirmed on WhatsApp.')}</div>
+        </div>
+
+        <p class="detail-desc">${A.esc(p.description || 'Message us for the full inventory breakdown for this account.')}</p>
+
+        <div class="detail-points">
+          <div class="detail-point"><span class="tick">✓</span><span>Credentials delivered on WhatsApp after payment is confirmed.</span></div>
+          <div class="detail-point"><span class="tick">✓</span><span>24 hours of post-sale support to secure the account.</span></div>
+          <div class="detail-point"><span class="tick">✓</span><span>Listing screenshots are from the actual account — no stock images.</span></div>
+        </div>
+
+        <div class="buy-actions">
+          <button class="btn btn-whatsapp btn-lg btn-block" id="buyBtn" ${soldOut ? 'disabled' : ''}>
+            ${soldOut ? 'Sold out — ask for a similar account' : 'Buy on WhatsApp'}
+          </button>
+          <a class="btn btn-ghost btn-block" id="askBtn" href="#">Ask a question first</a>
+        </div>
+
+        <div class="detail-meta-grid">
+          <div class="meta-cell"><div class="k">Game</div><div class="v">${A.esc(p.game || '—')}</div></div>
+          <div class="meta-cell"><div class="k">Availability</div><div class="v">${stockLabel}</div></div>
+          <div class="meta-cell"><div class="k">Delivery</div><div class="v">WhatsApp · instant</div></div>
+          <div class="meta-cell"><div class="k">Support</div><div class="v">${A.esc(cfg.supportHours || 'Mon – Sat')}</div></div>
+        </div>
+      </div>
+    </div>`;
+
+  /* ------------------------------ gallery ------------------------------ */
+  let index = 0;
+  const track = document.getElementById('track');
+  const counter = document.getElementById('counter');
+  const dots = [...document.querySelectorAll('#dots button')];
+  const thumbs = [...document.querySelectorAll('#thumbs img')];
+
+  function goTo(i) {
+    index = Math.max(0, Math.min(images.length - 1, i));
+    track.style.transform = `translateX(-${index * 100}%)`;
+    counter.textContent = `${index + 1} / ${images.length}`;
+    dots.forEach((d, n) => d.classList.toggle('active', n === index));
+    thumbs.forEach((t, n) => t.classList.toggle('active', n === index));
+  }
+
+  document.getElementById('prevBtn')?.addEventListener('click', () => goTo(index - 1));
+  document.getElementById('nextBtn')?.addEventListener('click', () => goTo(index + 1));
+  dots.forEach((d) => d.addEventListener('click', () => goTo(Number(d.dataset.i))));
+  thumbs.forEach((t) => t.addEventListener('click', () => goTo(Number(t.dataset.i))));
+
+  document.addEventListener('keydown', (e) => {
+    if (document.getElementById('buyModal').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') goTo(index - 1);
+    if (e.key === 'ArrowRight') goTo(index + 1);
+  });
+
+  // touch / pointer swipe
+  const stage = document.getElementById('stage');
+  let startX = 0, startY = 0, dragging = false, locked = null;
+
+  stage.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dragging = true; locked = null;
+  }, { passive: true });
+
+  stage.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (locked === null) locked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (locked === 'x') {
+      track.classList.add('dragging');
+      track.style.transform = `translateX(calc(-${index * 100}% + ${dx}px))`;
+    }
+  }, { passive: true });
+
+  stage.addEventListener('touchend', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    track.classList.remove('dragging');
+    if (locked === 'x') {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 45) goTo(dx < 0 ? index + 1 : index - 1);
+      else goTo(index);
+    } else {
+      goTo(index);
+    }
+    locked = null;
+  });
+
+  /* --------------------------- whatsapp flow --------------------------- */
+  const WAIT_MS = 3000;
+  const modal = document.getElementById('buyModal');
+  const agreeBtn = document.getElementById('agreeBtn');
+  const agreeLabel = document.getElementById('agreeLabel');
+  const waitHint = document.getElementById('waitHint');
+  let unlocked = false;
+  let timer = null;
+
+  function message() {
+    const lines = [
+      `Hi ${cfg.storeName || 'Panda Gaming Store'}! I'd like to buy this account:`,
+      '',
+      `🎮 Game: ${p.game}`,
+      `📦 Listing: ${p.title}`,
+      `💰 Price: ${ngn} (${A.usd(p.priceUsd)})`,
+    ];
+    if (p.deliveryCode) lines.push(`🔑 Account code: ${p.deliveryCode}`);
+    lines.push('', 'I have read and accept the purchase terms. Please send payment details.');
+    return lines.join('\n');
+  }
+
+  function openModal() {
+    document.getElementById('summaryTitle').textContent = p.title;
+    document.getElementById('summaryPrice').textContent = `${ngn} · ${A.usd(p.priceUsd)}`;
+    document.getElementById('termsBody').textContent = cfg.termsText || 'Terms are being updated.';
+
+    // reset the gate every time the modal opens
+    unlocked = false;
+    agreeBtn.disabled = true;
+    agreeLabel.textContent = 'I Agree — continue to WhatsApp';
+    let left = Math.ceil(WAIT_MS / 1000);
+    waitHint.textContent = `Reading time: ${left}s…`;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      left -= 1;
+      if (left > 0) {
+        waitHint.textContent = `Reading time: ${left}s…`;
+      } else {
+        clearInterval(timer);
+        unlocked = true;
+        waitHint.textContent = 'Terms accepted — tap to continue.';
+        syncButton();
+      }
+    }, 1000);
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function syncButton() {
+    agreeBtn.disabled = !unlocked;
+  }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    clearInterval(timer);
+  }
+
+  document.getElementById('buyBtn')?.addEventListener('click', openModal);
+  document.getElementById('buyClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+
+  agreeBtn.addEventListener('click', () => {
+    if (agreeBtn.disabled) return;
+    window.open(A.waLink(message()), '_blank', 'noopener');
+    closeModal();
+    A.toast('Opening WhatsApp — send the message to confirm your order.');
+  });
+
+  // plain question link (no terms gate needed)
+  document.getElementById('askBtn').href = A.waLink(
+    `Hi! I have a question about "${p.title}" (${ngn}) before I buy.`
+  );
+
+  /* ------------------------------ related ------------------------------ */
+  if (data.related && data.related.length) {
+    const wrap = document.getElementById('relatedWrap');
+    wrap.hidden = false;
+    document.getElementById('relatedGrid').innerHTML = data.related
+      .map((r) => A.productCard({ ...r, images: [r.cover], stock: 1 }))
+      .join('');
+  }
+
+  /* ---------------------------- not found ---------------------------- */
+  function showNotFound(msg) {
+    host.innerHTML = `
+      <div class="not-found">
+        <div style="font-size:46px;margin-bottom:12px;">🐼</div>
+        <h1>Nothing here</h1>
+        <p>${A.esc(msg)}</p>
+        <a href="/#marketplace" class="btn btn-primary">Back to the marketplace</a>
+      </div>`;
+    document.getElementById('relatedWrap')?.remove();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "panda-gaming-store",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Panda Gaming Store — buy & sell gaming accounts. Static storefront + Vercel serverless admin API.",
+  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "start": "node scripts/dev-server.js",
+    "build": "node scripts/build-check.js",
+    "check": "node scripts/build-check.js"
+  },
+  "keywords": [
+    "gaming",
+    "accounts",
+    "store",
+    "vercel",
+    "serverless"
+  ],
+  "license": "UNLICENSED"
+}

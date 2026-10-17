@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support & contact — Panda Gaming Store</title>
+<meta name="description" content="Report a problem, request a specific account, or just ask a question. We reply fast on WhatsApp and email.">
+<meta name="theme-color" content="#070A11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow" style="margin:0 auto 18px;"><span class="pulse-dot"></span> <span data-announcement>We reply fast</span></div>
+      <h1>Talk to a human. <span class="accent">Actually.</span></h1>
+      <p>Complaints, account requests, or something that went wrong — send it here and it lands with the team that can fix it.</p>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="form-layout" id="formLayout">
+
+      <div class="form-card" id="formCard">
+        <form id="contactForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="c_name">Your name <span class="req">*</span></label>
+              <input class="input" id="c_name" name="name" autocomplete="name" placeholder="Your name" required>
+            </div>
+
+            <div class="field">
+              <label for="c_contact">Email or WhatsApp <span class="req">*</span></label>
+              <input class="input" id="c_contact" name="contact" placeholder="you@email.com or 0801 234 5678" required>
+            </div>
+
+            <div class="field">
+              <label for="c_topic">What's this about? <span class="req">*</span></label>
+              <select class="select" id="c_topic" name="topic" required>
+                <option>Request a specific account</option>
+                <option>Report a problem with an order</option>
+                <option>Complaint</option>
+                <option>Payment question</option>
+                <option>General enquiry</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="c_game">Game (if relevant)</label>
+              <select class="select" id="c_game" name="game">
+                <option value="">Not game-specific</option>
+                <option>Free Fire</option>
+                <option>Call of Duty</option>
+                <option>PUBG Mobile</option>
+                <option>Blood Strike</option>
+                <option>Valorant</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="c_message">Message <span class="req">*</span></label>
+              <textarea class="textarea" id="c_message" name="message" placeholder="Tell us what you need. If it's an account request, include the rank, skins and budget you have in mind." required minlength="10"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary btn-lg" type="submit" id="submitBtn">Send message</button>
+            <a class="btn btn-ghost btn-lg" href="#" data-wa="Hi! I need some help with an order.">Or message us on WhatsApp</a>
+          </div>
+
+          <div class="status-box" id="statusBox" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+
+      <div class="form-card success-stage" id="successStage">
+        <div class="tick-circle">✅</div>
+        <h2>Message sent</h2>
+        <p>Thanks for reaching out — your message is on its way. Expect a reply during our support hours, and usually well before.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a href="#" class="btn btn-whatsapp" id="waHandoff" data-wa="Hi! I just sent a support message.">Send on WhatsApp too</a>
+          <a href="/#marketplace" class="btn btn-ghost">Browse accounts</a>
+        </div>
+      </div>
+
+      <aside class="side-stack" id="sideStack">
+        <div class="side-card">
+          <h4>Direct lines</h4>
+          <div class="contact-lines">
+            <a class="contact-line" href="#" data-wa="Hi! I'd like to talk about an account.">
+              <span class="ico">💬</span>
+              <span><span class="label">WhatsApp</span><span class="value">Fastest response</span></span>
+            </a>
+            <a class="contact-line" data-tel href="#">
+              <span class="ico">📞</span>
+              <span><span class="label">Call</span><span class="value">Store line</span></span>
+            </a>
+            <a class="contact-line" data-email href="#">
+              <span class="ico">✉️</span>
+              <span><span class="label">Email</span><span class="value">hello@</span></span>
+            </a>
+          </div>
+          <p style="margin-top:14px;font-size:.75rem;color:var(--text-mute);"><span data-support-hours>Support hours</span></p>
+        </div>
+
+        <div class="side-card">
+          <h4>Follow the drops</h4>
+          <p>New accounts get posted to our socials first — follow to catch the good ones.</p>
+          <div class="socials" style="margin-top:14px;">
+            <span id="socialsHost"></span>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h4>Before you message</h4>
+          <div class="side-list">
+            <div class="side-item"><span class="ico">🧾</span><span>For order issues, include your listing name and payment time.</span></div>
+            <div class="side-item"><span class="ico">⏱️</span><span>Refund requests are only valid within 24 hours of delivery.</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="tips-grid" id="tipsGrid">
+      <div class="tip">
+        <div class="icon">🎯</div>
+        <h4>Requesting an account?</h4>
+        <p>Name the game, the rank you want, and your budget. Vague requests take longer to source.</p>
+      </div>
+      <div class="tip">
+        <div class="icon">🛠️</div>
+        <h4>Something broke?</h4>
+        <p>Send the listing name and what happened. We fix delivery issues inside 24 hours.</p>
+      </div>
+      <div class="tip">
+        <div class="icon">🔐</div>
+        <h4>Security first</h4>
+        <p>We never ask for your bank PIN or OTP. Only ever pay through the channels on this site.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap" id="googleFallback" hidden style="padding-bottom:clamp(40px,6vw,70px);">
+    <div class="embed-shell">
+      <div class="embed-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span>Support request form</span>
+      </div>
+      <div class="embed-frame">
+        <iframe id="googleFormFrame" title="Support request form" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: 'support' });
+  const cfg = state.settings || {};
+
+  const form = document.getElementById('contactForm');
+  const status = document.getElementById('statusBox');
+  const submitBtn = document.getElementById('submitBtn');
+
+  const hoursEl = document.querySelector('[data-support-hours]');
+  if (hoursEl) hoursEl.textContent = cfg.supportHours || 'Mon – Sat';
+
+  const socialsHost = document.getElementById('socialsHost');
+  if (socialsHost) socialsHost.outerHTML = A.socialLinks();
+
+  function setStatus(message, kind = 'info') {
+    status.className = `status-box show ${kind}`;
+    status.textContent = message;
+  }
+
+  function showGoogleForm() {
+    const url = cfg.googleFormContactUrl;
+    if (!url) {
+      setStatus('Submissions are not configured yet — please message us on WhatsApp instead.', 'bad');
+      return;
+    }
+    document.getElementById('formLayout').hidden = true;
+    document.getElementById('tipsGrid').hidden = true;
+    const fallback = document.getElementById('googleFallback');
+    fallback.hidden = false;
+    document.getElementById('googleFormFrame').src = url;
+    fallback.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    A.toast('Using the backup support form.');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = Object.fromEntries(new FormData(form).entries());
+    if (!data.name || !data.contact || !data.message || data.message.trim().length < 10) {
+      setStatus('Please add your name, a way to reach you, and a message of at least 10 characters.', 'bad');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending…';
+
+    try {
+      const result = await A.api('/api/submit/contact', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+
+      if (result.mode === 'google-form') {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send message';
+        showGoogleForm();
+        return;
+      }
+
+      // No inbox configured: hand the message to WhatsApp so it always reaches us.
+      if (result.mode === 'whatsapp') {
+        const msg = [
+          `Hi ${cfg.storeName || 'Panda Gaming Store'}!`,
+          '',
+          `📌 ${data.topic}`,
+          ...(data.game ? [`🎮 Game: ${data.game}`] : []),
+          '',
+          `📝 ${data.message}`,
+          '',
+          `— ${data.name} (${data.contact})`,
+        ];
+        const link = document.getElementById('waHandoff');
+        if (link) link.href = A.waLink(msg.join('\n'));
+        document.getElementById('formCard').hidden = true;
+        document.getElementById('successStage').classList.add('show');
+        document.querySelector('.form-layout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        A.toast('One more tap — send it to us on WhatsApp.');
+        return;
+      }
+
+      document.getElementById('formCard').hidden = true;
+      document.getElementById('successStage').classList.add('show');
+      document.querySelector('.form-layout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      setStatus(err.message || 'Message failed. Please try again.', 'bad');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send message';
+    }
+  });
+})();
+</script>
+</body>
+</html>

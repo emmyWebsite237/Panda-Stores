@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Store admin — Panda Gaming Store</title>
+<meta name="theme-color" content="#06090F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body class="admin-body">
+
+<!-- ======================= LOGIN ======================= -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <div class="brand"><span class="brand-badge">🐼</span><span>Store admin<small>Panda Gaming Store</small></span></div>
+    <h1>Welcome back</h1>
+    <p class="sub">Sign in to manage listings, pricing and store settings.</p>
+
+    <div class="login-err" id="loginErr"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="password">Admin password</label>
+        <input class="input" type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter your password" required>
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" type="submit" id="loginBtn">Sign in</button>
+    </form>
+
+    <p class="login-foot" id="loginFoot">Protected area. Sessions last 7 days on this device.</p>
+  </div>
+</div>
+
+<!-- ======================= DASHBOARD ======================= -->
+<div class="admin-shell" id="adminView" hidden>
+  <div class="admin-top">
+    <div class="admin-top-left">
+      <div class="brand"><span class="brand-badge">🐼</span><span>Store admin<small id="storeLabel">Panda Gaming Store</small></span></div>
+      <span class="admin-pill" id="modePill">—</span>
+    </div>
+    <div class="admin-top-actions">
+      <a href="/" class="btn btn-ghost btn-sm" target="_blank" rel="noopener">View store</a>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="admin-tabs" role="tablist">
+    <button class="admin-tab active" data-tab="products" role="tab">Products</button>
+    <button class="admin-tab" data-tab="settings" role="tab">Store settings</button>
+    <button class="admin-tab" data-tab="setup" role="tab">Setup & status</button>
+  </div>
+
+  <div class="admin-main">
+
+    <!-- ==================== PRODUCTS TAB ==================== -->
+    <section class="admin-panel" id="tab-products">
+      <div class="panel-head">
+        <div>
+          <h2>Products</h2>
+          <p>Gaming accounts shown on the storefront. Cover image is used on cards; all images form the gallery.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" id="newProductBtn">+ New account</button>
+      </div>
+
+      <div class="mini-stats">
+        <div class="mini-stat"><div class="k">Listings</div><div class="v" id="msProducts">0</div></div>
+        <div class="mini-stat"><div class="k">In stock</div><div class="v green" id="msStock">0</div></div>
+        <div class="mini-stat"><div class="k">Sold out</div><div class="v gold" id="msOut">0</div></div>
+        <div class="mini-stat"><div class="k">Currency rate</div><div class="v" id="msRate">—</div></div>
+      </div>
+
+      <div class="admin-list" id="productList">
+        <div class="skeleton" style="height:72px;border-radius:12px;"></div>
+        <div class="skeleton" style="height:72px;border-radius:12px;"></div>
+      </div>
+    </section>
+
+    <!-- ==================== EDITOR ==================== -->
+    <section class="admin-panel" id="tab-editor" hidden>
+      <div class="panel-head">
+        <div>
+          <h2 id="editorTitle">New account</h2>
+          <p>Fill in the details buyers see. Delivery code is only revealed after they accept the terms.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="backToList">← Back to list</button>
+      </div>
+
+      <form id="productForm">
+        <div class="editor-grid">
+          <div class="field full">
+            <label for="p_title">Listing title <span class="req">*</span></label>
+            <input class="input" id="p_title" name="title" placeholder="e.g. Free Fire · Heroic, Full Wardrobe" required>
+          </div>
+
+          <div class="field">
+            <label for="p_game">Game / category <span class="req">*</span></label>
+            <input class="input" id="p_game" name="game" list="gameList" placeholder="e.g. Free Fire" required>
+            <datalist id="gameList"></datalist>
+            <span class="hint">Use an existing game name to group it with other listings.</span>
+          </div>
+
+          <div class="field">
+            <label for="p_price">Price in USD <span class="req">*</span></label>
+            <input class="input" id="p_price" name="priceUsd" type="number" min="0" step="0.01" placeholder="28.00" required>
+            <span class="hint" id="pricePreview">Naira price will appear here.</span>
+          </div>
+
+          <div class="field">
+            <label for="p_stock">Stock / availability</label>
+            <input class="input" id="p_stock" name="stock" type="number" min="0" step="1" value="1">
+            <span class="hint">0 marks it sold out and disables the buy button.</span>
+          </div>
+
+          <div class="field">
+            <label for="p_code">Delivery code (sent via WhatsApp)</label>
+            <input class="input" id="p_code" name="deliveryCode" placeholder="e.g. FF-HEROIC-7K2Q">
+            <span class="hint">Include this in the prefilled message. Leave blank to hide it.</span>
+          </div>
+
+          <div class="field full">
+            <label for="p_desc">Description</label>
+            <textarea class="textarea" id="p_desc" name="description" rows="5" placeholder="Skins, rank history, pets, linked socials — sell the inventory."></textarea>
+          </div>
+
+          <div class="field full">
+            <label>Images <span class="req">*</span> <span class="hint" style="display:inline;">(2–5 — click a tile to set the cover)</span></label>
+            <div class="image-manager" id="imageManager"></div>
+            <div class="upload-status" id="uploadStatus"></div>
+            <div class="url-add">
+              <input class="input" id="imgUrlInput" type="url" placeholder="…or paste an image URL (works without Cloudinary)">
+              <button type="button" class="btn btn-ghost btn-sm" id="imgUrlAdd">Add URL</button>
+            </div>
+            <span class="hint">Uploads go straight to Cloudinary. First image is the cover unless you pick another.</span>
+          </div>
+
+          <div class="field full">
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;">
+              <input type="checkbox" id="p_featured" name="featured" style="width:17px;height:17px;accent-color:var(--bamboo);">
+              <span>Feature this listing (pinned to the top of the grid)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="sticky-save">
+          <button type="button" class="btn btn-ghost" id="cancelEdit">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveProductBtn">Save account</button>
+        </div>
+
+        <div class="status-box" id="editorStatus" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <!-- ==================== SETTINGS TAB ==================== -->
+    <section class="admin-panel" id="tab-settings" hidden>
+      <div class="panel-head">
+        <div>
+          <h2>Store settings</h2>
+          <p>Everything here drives the public site — no contact details are hardcoded anywhere.</p>
+        </div>
+      </div>
+
+      <form id="settingsForm">
+        <div class="settings-sec">
+          <h3>Identity</h3>
+          <div class="settings-grid">
+            <div class="field">
+              <label for="st_storeName">Store name</label>
+              <input class="input" id="st_storeName" name="storeName">
+            </div>
+            <div class="field">
+              <label for="st_tagline">Tagline</label>
+              <input class="input" id="st_tagline" name="tagline">
+            </div>
+            <div class="field full">
+              <label for="st_heroHeadline">Hero headline</label>
+              <input class="input" id="st_heroHeadline" name="heroHeadline">
+            </div>
+            <div class="field full">
+              <label for="st_heroSubline">Hero sub-headline</label>
+              <textarea class="textarea" id="st_heroSubline" name="heroSubline" rows="3"></textarea>
+            </div>
+            <div class="field full">
+              <label for="st_announcement">Announcement strip</label>
+              <input class="input" id="st_announcement" name="announcement" placeholder="e.g. Fresh drops every week · Instant WhatsApp delivery">
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-sec">
+          <h3>Contact & social</h3>
+          <div class="settings-grid">
+            <div class="field">
+              <label for="st_whatsappNumber">WhatsApp number <span class="req">*</span></label>
+              <input class="input" id="st_whatsappNumber" name="whatsappNumber" inputmode="numeric" placeholder="2348012345678">
+              <span class="hint">Digits only, with country code. Used for every buy button.</span>
+            </div>
+            <div class="field">
+              <label for="st_phoneNumber">Phone number (floating call)</label>
+              <input class="input" id="st_phoneNumber" name="phoneNumber" placeholder="+234 801 234 5678">
+            </div>
+            <div class="field">
+              <label for="st_email">Email</label>
+              <input class="input" id="st_email" name="email" type="email" placeholder="hello@store.com">
+            </div>
+            <div class="field">
+              <label for="st_supportHours">Support hours</label>
+              <input class="input" id="st_supportHours" name="supportHours" placeholder="Mon – Sat · 9:00am – 9:00pm WAT">
+            </div>
+            <div class="field">
+              <label for="st_instagram">Instagram</label>
+              <input class="input" id="st_instagram" name="instagram" placeholder="https://instagram.com/handle">
+            </div>
+            <div class="field">
+              <label for="st_tiktok">TikTok</label>
+              <input class="input" id="st_tiktok" name="tiktok" placeholder="https://tiktok.com/@handle">
+            </div>
+            <div class="field">
+              <label for="st_telegram">Telegram</label>
+              <input class="input" id="st_telegram" name="telegram" placeholder="https://t.me/handle">
+            </div>
+            <div class="field">
+              <label for="st_address">Location note</label>
+              <input class="input" id="st_address" name="address" placeholder="Lagos, Nigeria · 100% online delivery">
+            </div>
+            <div class="field full">
+              <label for="st_responseTime">Response time note</label>
+              <input class="input" id="st_responseTime" name="responseTime" placeholder="Usually replies in under 10 minutes">
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-sec">
+          <h3>Pricing & terms</h3>
+          <div class="settings-grid">
+            <div class="field">
+              <label for="st_usdToNgn">USD → NGN rate <span class="req">*</span></label>
+              <input class="input" id="st_usdToNgn" name="usdToNgn" type="number" min="1" step="0.01">
+              <span class="hint" id="ratePreview">All Naira prices are calculated with this rate.</span>
+            </div>
+            <div class="field">
+              <label for="st_currencyNote">Currency note</label>
+              <input class="input" id="st_currencyNote" name="currencyNote">
+            </div>
+            <div class="field full">
+              <label for="st_termsText">Purchase terms</label>
+              <textarea class="textarea" id="st_termsText" name="termsText" rows="12"></textarea>
+              <span class="hint">Shown in the buy modal. Line breaks are preserved.</span>
+            </div>
+            <div class="field full">
+              <label style="display:flex;align-items:center;gap:9px;cursor:pointer;">
+                <input type="checkbox" id="st_showCodeInMessage" name="showCodeInMessage" style="width:17px;height:17px;accent-color:var(--bamboo);">
+                <span>Include the delivery code in the WhatsApp message</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-sec">
+          <h3>Fallback forms (optional)</h3>
+          <div class="settings-grid">
+            <div class="field">
+              <label for="st_googleFormSellUrl">Google Form — sell your account</label>
+              <input class="input" id="st_googleFormSellUrl" name="googleFormSellUrl" placeholder="https://docs.google.com/forms/d/e/…/viewform?embedded=true">
+              <span class="hint">Used only when FORMSUBMIT_ENDPOINT is not set.</span>
+            </div>
+            <div class="field">
+              <label for="st_googleFormContactUrl">Google Form — support / contact</label>
+              <input class="input" id="st_googleFormContactUrl" name="googleFormContactUrl" placeholder="https://docs.google.com/forms/d/e/…/viewform?embedded=true">
+            </div>
+          </div>
+        </div>
+
+        <div class="sticky-save">
+          <button type="submit" class="btn btn-primary" id="saveSettingsBtn">Save settings</button>
+        </div>
+        <div class="status-box" id="settingsStatus" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <!-- ==================== SETUP TAB ==================== -->
+    <section class="admin-panel" id="tab-setup" hidden>
+      <div class="panel-head">
+        <div><h2>Setup & status</h2><p>What's wired up in this deployment.</p></div>
+      </div>
+
+      <div class="settings-sec">
+        <h3>Integrations</h3>
+        <div class="admin-list" id="envList">
+          <div class="skeleton" style="height:52px;border-radius:10px;"></div>
+        </div>
+      </div>
+
+      <div class="settings-sec">
+        <h3>Environment variables</h3>
+        <div class="side-card" style="background:rgba(255,255,255,.03);">
+          <p style="line-height:1.9;font-family:var(--font-mono);font-size:.74rem;word-break:break-all;">
+            ADMIN_PASSWORD · ADMIN_SESSION_SECRET · ADMIN_SESSION_DAYS<br>
+            SUPABASE_URL · SUPABASE_SERVICE_ROLE_KEY · SUPABASE_TABLE<br>
+            UPSTASH_REDIS_REST_URL · UPSTASH_REDIS_REST_TOKEN<br>
+            CLOUDINARY_CLOUD_NAME · CLOUDINARY_UPLOAD_PRESET<br>
+            CLOUDINARY_API_KEY · CLOUDINARY_API_SECRET · CLOUDINARY_FOLDER<br>
+            FORMSUBMIT_ENDPOINT · FORMSUBMIT_CONTACT_ENDPOINT<br>
+            DEFAULT_WHATSAPP_NUMBER · DEFAULT_STORE_NAME · DEFAULT_USD_TO_NGN
+          </p>
+        </div>
+        <p class="form-note">Set these in Vercel → Project → Settings → Environment Variables, then redeploy. See <code>.env.example</code> in the project root.</p>
+      </div>
+
+      <div class="settings-sec">
+        <h3>Data</h3>
+        <div class="side-card" style="background:rgba(255,255,255,.03);">
+          <p id="storageNote">Checking…</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- image file input (shared) -->
+<input type="file" id="imgInput" accept="image/*" multiple hidden>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+
+  const el = (id) => document.getElementById(id);
+  const loginView = el('loginView');
+  const adminView = el('adminView');
+
+  let admin = { authed: false };
+  let products = [];
+  let settings = {};
+  let editing = null;      // product being edited (null = new)
+  let images = [];         // working image list in the editor
+  let cover = '';          // chosen cover
+  let isSaving = false;
+
+  /* ============================ session ============================ */
+
+  async function checkSession() {
+    try {
+      admin = await A.api('/api/admin/session');
+    } catch {
+      admin = { authed: false };
+    }
+
+    if (admin.authed) {
+      loginView.hidden = true;
+      adminView.hidden = false;
+      el('modePill').textContent = admin.storage === 'memory' ? 'Demo mode' : admin.storage;
+      el('modePill').className = `admin-pill ${admin.storage === 'memory' ? 'demo' : 'live'}`;
+      await loadData();
+      renderProducts();
+      renderEnv();
+    } else {
+      loginView.hidden = false;
+      adminView.hidden = true;
+      if (admin.usingDefaultPassword) {
+        el('loginFoot').innerHTML =
+          '⚠️ No <code>ADMIN_PASSWORD</code> set — the demo password is in use.<br>Set it in Vercel before going live.';
+      }
+    }
+  }
+
+  el('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = el('loginErr');
+    const btn = el('loginBtn');
+    err.classList.remove('show');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    try {
+      await A.api('/api/admin/login', {
+        method: 'POST',
+        body: JSON.stringify({ password: el('password').value }),
+      });
+      el('password').value = '';
+      await checkSession();
+    } catch (ex) {
+      err.textContent = ex.message || 'Could not sign in.';
+      err.classList.add('show');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+    }
+  });
+
+  el('logoutBtn').addEventListener('click', async () => {
+    try { await A.api('/api/admin/logout', { method: 'POST' }); } catch {}
+    window.location.reload();
+  });
+
+  /* ============================== tabs ============================== */
+
+  document.querySelectorAll('.admin-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      ['products', 'settings', 'setup', 'editor'].forEach((name) => {
+        el(`tab-${name}`).hidden = name !== tab.dataset.tab;
+      });
+      if (tab.dataset.tab === 'settings') fillSettingsForm();
+      if (tab.dataset.tab === 'setup') renderEnv();
+    });
+  });
+
+  function showTab(name) {
+    document.querySelectorAll('.admin-tab').forEach((t) =>
+      t.classList.toggle('active', t.dataset.tab === name)
+    );
+    ['products', 'settings', 'setup', 'editor'].forEach((n) => {
+      el(`tab-${n}`).hidden = n !== name;
+    });
+  }
+
+  /* ============================== data ============================== */
+
+  async function loadData() {
+    try {
+      const [p, s] = await Promise.all([
+        A.api('/api/admin/products'),
+        A.api('/api/admin/settings'),
+      ]);
+      products = p.products || [];
+      settings = s.settings || {};
+      el('storeLabel').textContent = settings.storeName || 'Panda Gaming Store';
+      fillSettingsForm();
+    } catch (err) {
+      A.toast(err.message || 'Could not load data', true);
+    }
+  }
+
+  /* ============================ products ============================ */
+
+  function renderProducts() {
+    const list = el('productList');
+    el('msProducts').textContent = products.length;
+    el('msStock').textContent = products.filter((p) => Number(p.stock) > 0).length;
+    el('msOut').textContent = products.filter((p) => Number(p.stock) === 0).length;
+    el('msRate').textContent = `₦${Number(settings.usdToNgn || 0).toLocaleString('en-NG')}`;
+
+    // game suggestions
+    const games = [...new Set(products.map((p) => p.game).filter(Boolean))];
+    el('gameList').innerHTML = games.map((g) => `<option value="${A.esc(g)}"></option>`).join('');
+
+    if (!products.length) {
+      list.innerHTML = `<div class="empty-state">
+        <strong>No accounts yet</strong>
+        <p style="margin:8px 0 16px;font-size:.85rem;">Add your first listing to populate the store.</p>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('newProductBtn').click()">+ New account</button>
+      </div>`;
+      return;
+    }
+
+    list.innerHTML = products
+      .map((p) => {
+        const ngn = A.money((Number(p.priceUsd) || 0) * (Number(settings.usdToNgn) || 0));
+        return `
+        <div class="admin-row" data-id="${A.esc(p.id)}">
+          <img src="${A.esc(p.cover || (p.images || [])[0] || '')}" alt="">
+          <div>
+            <div class="r-title">${A.esc(p.title)}</div>
+            <div class="r-meta">${A.esc(p.game)} · ${p.images?.length || 0} images · ${Number(p.stock) > 0 ? `${p.stock} in stock` : 'sold out'}${p.featured ? ' · featured' : ''}</div>
+          </div>
+          <div class="r-price">${ngn}<small>${A.usd(p.priceUsd)}</small></div>
+          <div class="r-actions">
+            <button class="icon-btn" data-edit="${A.esc(p.id)}" title="Edit" aria-label="Edit">✎</button>
+            <button class="icon-btn danger" data-del="${A.esc(p.id)}" title="Delete" aria-label="Delete">🗑</button>
+          </div>
+        </div>`;
+      })
+      .join('');
+
+    list.querySelectorAll('[data-edit]').forEach((btn) =>
+      btn.addEventListener('click', () => openEditor(btn.dataset.edit))
+    );
+    list.querySelectorAll('[data-del]').forEach((btn) =>
+      btn.addEventListener('click', () => deleteProduct(btn.dataset.del))
+    );
+  }
+
+  async function deleteProduct(id) {
+    const item = products.find((p) => p.id === id);
+    if (!item) return;
+    if (!confirm(`Delete "${item.title}"?\n\nThis removes the listing from the store immediately.`)) return;
+
+    try {
+      await A.api(`/api/admin/products?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+      products = products.filter((p) => p.id !== id);
+      renderProducts();
+      A.toast('Listing deleted');
+    } catch (err) {
+      A.toast(err.message || 'Delete failed', true);
+    }
+  }
+
+  el('newProductBtn').addEventListener('click', () => openEditor(null));
+  el('backToList').addEventListener('click', () => showTab('products'));
+  el('cancelEdit').addEventListener('click', () => showTab('products'));
+
+  function openEditor(id) {
+    editing = id ? products.find((p) => p.id === id) : null;
+    el('editorTitle').textContent = editing ? 'Edit account' : 'New account';
+    el('editorStatus').className = 'status-box';
+
+    el('p_title').value = editing?.title || '';
+    el('p_game').value = editing?.game || '';
+    el('p_price').value = editing?.priceUsd ?? '';
+    el('p_stock').value = editing?.stock ?? 1;
+    el('p_code').value = editing?.deliveryCode || '';
+    el('p_desc').value = editing?.description || '';
+    el('p_featured').checked = Boolean(editing?.featured);
+
+    images = [...(editing?.images || [])];
+    cover = editing?.cover || images[0] || '';
+
+    renderImageManager();
+    updatePricePreview();
+    showTab('editor');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updatePricePreview() {
+    const usd = Number(el('p_price').value) || 0;
+    const rate = Number(settings.usdToNgn) || 0;
+    el('pricePreview').textContent = usd
+      ? `Buyers see ${A.money(usd * rate)} (at ₦${rate.toLocaleString('en-NG')}/$)`
+      : 'Naira price will appear here.';
+  }
+  el('p_price').addEventListener('input', updatePricePreview);
+
+  /* -------------------------- image manager -------------------------- */
+
+  function renderImageManager() {
+    const host = el('imageManager');
+    host.innerHTML =
+      images
+        .map(
+          (src, i) => `
+        <div class="img-tile ${src === cover ? 'is-cover' : ''}" data-i="${i}" title="Click to set as cover">
+          <img src="${A.esc(src)}" alt="Image ${i + 1}">
+          <span class="rm" data-rm="${i}" role="button" aria-label="Remove">✕</span>
+          ${src === cover ? '<span class="cover-tag">COVER</span>' : ''}
+        </div>`
+        )
+        .join('') +
+      (images.length < 5
+        ? `<label class="img-add" for="imgInput">+<br>Add image</label>`
+        : '');
+
+    host.querySelectorAll('.img-tile').forEach((tile) => {
+      tile.addEventListener('click', (e) => {
+        if (e.target.dataset.rm !== undefined) return;
+        cover = images[Number(tile.dataset.i)];
+        renderImageManager();
+      });
+    });
+
+    host.querySelectorAll('[data-rm]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const removed = images.splice(Number(btn.dataset.rm), 1)[0];
+        if (removed === cover) cover = images[0] || '';
+        renderImageManager();
+      });
+    });
+  }
+
+  el('imgInput').addEventListener('change', async (e) => {
+    await uploadImages([...e.target.files]);
+    e.target.value = '';
+  });
+
+  /* Paste-an-image-URL fallback: keeps the admin usable before Cloudinary is wired up. */
+  el('imgUrlAdd').addEventListener('click', () => {
+    const input = el('imgUrlInput');
+    const url = input.value.trim();
+    if (!/^(https?:\/\/|\/)/i.test(url)) {
+      A.toast('Enter a full image URL starting with http (or a /path to an image)', true);
+      return;
+    }
+    if (images.length >= 5) {
+      A.toast('Maximum 5 images per listing', true);
+      return;
+    }
+    images.push(url);
+    if (!cover) cover = url;
+    input.value = '';
+    renderImageManager();
+  });
+  el('imgUrlInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); el('imgUrlAdd').click(); }
+  });
+
+  async function uploadImages(files) {
+    const room = 5 - images.length;
+    const list = files.filter((f) => f.type.startsWith('image/')).slice(0, room);
+    if (!list.length) return;
+
+    const status = el('uploadStatus');
+    status.classList.add('show');
+
+    let sig;
+    try {
+      sig = await A.api('/api/admin/cloudinary-signature', { method: 'POST', body: '{}' });
+    } catch (err) {
+      status.textContent = err.message || 'Cloudinary is not configured — paste image URLs instead.';
+      A.toast('Cloudinary not configured — use the "Add URL" box below', true);
+      return;
+    }
+
+    for (const file of list) {
+      if (file.size > 8 * 1024 * 1024) {
+        status.textContent = `"${file.name}" is over 8MB — skipped.`;
+        continue;
+      }
+      try {
+        status.textContent = `Uploading ${file.name}…`;
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('folder', sig.folder);
+
+        if (sig.mode === 'unsigned') {
+          fd.append('upload_preset', sig.preset);
+        } else {
+          fd.append('api_key', sig.apiKey);
+          fd.append('timestamp', sig.timestamp);
+          fd.append('signature', sig.signature);
+        }
+
+        const res = await fetch(sig.uploadUrl, { method: 'POST', body: fd });
+        if (!res.ok) throw new Error('Upload rejected');
+        const json = await res.json();
+
+        images.push(json.secure_url);
+        if (!cover) cover = json.secure_url;
+        renderImageManager();
+      } catch (err) {
+        status.textContent = `Could not upload ${file.name}.`;
+        console.error(err);
+      }
+    }
+
+    status.textContent = `${images.length} image(s) ready.`;
+    setTimeout(() => status.classList.remove('show'), 2200);
+  }
+
+  /* --------------------------- save product --------------------------- */
+
+  el('productForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isSaving) return;
+
+    const status = el('editorStatus');
+    const payload = {
+      id: editing?.id,
+      title: el('p_title').value.trim(),
+      game: el('p_game').value.trim(),
+      priceUsd: Number(el('p_price').value),
+      stock: Number(el('p_stock').value) || 0,
+      deliveryCode: el('p_code').value.trim(),
+      description: el('p_desc').value.trim(),
+      featured: el('p_featured').checked,
+      images,
+      cover: cover || images[0] || '',
+    };
+
+    if (!payload.title || !payload.game) {
+      status.className = 'status-box show bad';
+      status.textContent = 'Title and game are required.';
+      return;
+    }
+    if (images.length < 2) {
+      status.className = 'status-box show bad';
+      status.textContent = images.length
+        ? 'A listing needs 2–5 images. Add one more.'
+        : 'A listing needs 2–5 images. Upload files, or paste image URLs if Cloudinary is not set up yet.';
+      return;
+    }
+
+    isSaving = true;
+    const btn = el('saveProductBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      const res = await A.api('/api/admin/products', {
+        method: editing ? 'PUT' : 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (editing) {
+        const i = products.findIndex((p) => p.id === editing.id);
+        if (i > -1) products[i] = res.product;
+      } else {
+        products.unshift(res.product);
+      }
+
+      renderProducts();
+      showTab('products');
+      A.toast(editing ? 'Listing updated' : 'Listing created');
+    } catch (err) {
+      status.className = 'status-box show bad';
+      status.textContent = err.message || 'Could not save the listing.';
+    } finally {
+      isSaving = false;
+      btn.disabled = false;
+      btn.textContent = 'Save account';
+    }
+  });
+
+  /* ============================= settings ============================= */
+
+  const SETTING_FIELDS = [
+    'storeName', 'tagline', 'heroHeadline', 'heroSubline', 'announcement',
+    'whatsappNumber', 'phoneNumber', 'email', 'supportHours', 'instagram',
+    'tiktok', 'telegram', 'address', 'responseTime', 'usdToNgn',
+    'currencyNote', 'termsText', 'googleFormSellUrl', 'googleFormContactUrl',
+  ];
+
+  function fillSettingsForm() {
+    SETTING_FIELDS.forEach((key) => {
+      const input = el(`st_${key}`);
+      if (input && settings[key] !== undefined) input.value = settings[key];
+    });
+    el('st_showCodeInMessage').checked = settings.showCodeInMessage !== false;
+
+    const rate = Number(settings.usdToNgn) || 0;
+    const preview = el('ratePreview');
+    if (preview) preview.textContent = `Example: $25 → ${A.money(25 * rate)}`;
+    const msRate = el('msRate');
+    if (msRate) msRate.textContent = `₦${rate.toLocaleString('en-NG')}`;
+  }
+
+  el('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = el('saveSettingsBtn');
+    const status = el('settingsStatus');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const payload = {};
+    SETTING_FIELDS.forEach((key) => {
+      const input = el(`st_${key}`);
+      if (input) payload[key] = input.value;
+    });
+    payload.showCodeInMessage = el('st_showCodeInMessage').checked;
+
+    try {
+      const res = await A.api('/api/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      settings = res.settings;
+      el('storeLabel').textContent = settings.storeName || 'Panda Gaming Store';
+      renderProducts();
+      fillSettingsForm();
+      status.className = 'status-box show ok';
+      status.textContent = 'Settings saved — the storefront is already using them.';
+      setTimeout(() => { status.className = 'status-box'; }, 4000);
+      A.toast('Settings saved');
+    } catch (err) {
+      status.className = 'status-box show bad';
+      status.textContent = err.message || 'Could not save settings.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save settings';
+    }
+  });
+
+  /* ============================== setup ============================== */
+
+  function renderEnv() {
+    const env = admin.env || {};
+    const rows = [
+      ['Admin password', !admin.usingDefaultPassword, admin.usingDefaultPassword ? 'Using demo fallback' : 'Set via ADMIN_PASSWORD'],
+      ['Cloudinary', env.cloudinary, env.cloudinaryUnsigned ? 'Unsigned preset' : env.cloudinarySigned ? 'Signed uploads' : 'Missing preset or keys'],
+      ['FormSubmit (sell)', env.formSubmit, env.formSubmit ? 'Configured' : 'Falls back to Google Form'],
+      ['FormSubmit (contact)', env.formSubmitContact, env.formSubmitContact ? 'Configured' : 'Falls back to Google Form'],
+      ['Persistence', admin.storage !== 'memory', admin.storage === 'memory' ? 'Demo — in-memory only' : admin.storage],
+    ];
+
+    el('envList').innerHTML = rows
+      .map(
+        ([label, ok, note]) => `
+      <div class="admin-row" style="grid-template-columns:1fr auto; padding:12px 14px;">
+        <div>
+          <div class="r-title" style="white-space:normal;">${A.esc(label)}</div>
+          <div class="r-meta">${A.esc(note)}</div>
+        </div>
+        <span class="admin-pill ${ok ? 'live' : 'demo'}">${ok ? 'Ready' : 'Not set'}</span>
+      </div>`
+      )
+      .join('');
+
+    el('storageNote').innerHTML =
+      admin.storage === 'memory'
+        ? '<strong style="color:var(--gold);">Demo mode.</strong> Changes work immediately but reset when the serverless function recycles or you redeploy. Add <code>SUPABASE_URL</code> + <code>SUPABASE_SERVICE_ROLE_KEY</code> (or Upstash) to make them permanent.'
+        : `Persisted in <strong>${A.esc(admin.storage)}</strong>. Products and settings survive redeploys.`;
+  }
+
+  /* ============================== boot ============================== */
+
+  await checkSession();
+})();
+</script>
+</body>
+</html>

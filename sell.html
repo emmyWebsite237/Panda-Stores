@@ -3,140 +3,384 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐼 Sell your account — Panda Store</title>
+<title>Sell your account — Panda Gaming Store</title>
+<meta name="description" content="Turn your gaming account into cash. Submit your inventory, get a fair offer, and get paid fast.">
+<meta name="theme-color" content="#070A11">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
 </head>
 <body>
 
-<div class="floaters" id="floaters"></div>
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
 
-<header>
-  <nav>
-    <a href="index.html" class="logo"><span class="badge">🐼</span> Panda Store</a>
-    <div class="navlinks">
-      <a href="index.html#how">How it works</a>
-      <a href="index.html#listings">Marketplace</a>
-      <a href="index.html#reviews">Reviews</a>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow" style="margin:0 auto 18px;"><span class="pulse-dot"></span> Sellers get paid in 24–48 hrs</div>
+      <h1>Turn your account into <span class="accent">cash.</span></h1>
+      <p>Tell us what you've built. We review every submission by hand, price it fairly against live market data, and pay fast once we agree.</p>
     </div>
-    <div class="nav-cta">
-      <a href="index.html" class="btn btn-ghost">← Back to marketplace</a>
-    </div>
-  </nav>
-</header>
+  </section>
 
-<section class="sell-hero">
   <div class="wrap">
-    <div class="eyebrow" style="margin:0 auto 18px; width:fit-content;"><span class="pulse-dot"></span> Sellers earn in 24–48 hrs on average</div>
-    <h1>List your account, get <span class="accent" style="background:linear-gradient(100deg,var(--bamboo),var(--neon-cyan) 55%,var(--neon-pink));-webkit-background-clip:text;background-clip:text;color:transparent;">real offers</span> 💰🎮</h1>
-    <p>Tell us about your account below — the game, the rank, the skins, and your price range. Our team reviews every submission before it goes live, so give us the details that make it shine.</p>
-  </div>
-</section>
+    <div class="form-layout" id="formLayout">
 
-<div class="wrap">
-  <div class="form-shell">
-    <div class="form-shell-top">
-      <div class="dots"><span></span><span></span><span></span></div>
-      panda-store.com/sell-your-account
-    </div>
+      <!-- ========================= FORM ========================= -->
+      <div class="form-card" id="formCard">
+        <form id="sellForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="s_name">Your name <span class="req">*</span></label>
+              <input class="input" id="s_name" name="name" autocomplete="name" placeholder="e.g. Emmanuel A." required>
+            </div>
 
-    <div class="form-frame-wrap" id="formFrameWrap">
-      <div class="form-loading" id="formLoading">
-        <div class="spin"></div>
-        <span>Loading the seller form…</span>
+            <div class="field">
+              <label for="s_whatsapp">WhatsApp number <span class="req">*</span></label>
+              <input class="input" id="s_whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 0801 234 5678" required>
+            </div>
+
+            <div class="field">
+              <label for="s_game">Game <span class="req">*</span></label>
+              <select class="select" id="s_game" name="game" required>
+                <option value="">Select the game…</option>
+                <option>Free Fire</option>
+                <option>Call of Duty</option>
+                <option>PUBG Mobile</option>
+                <option>Blood Strike</option>
+                <option>Valorant</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="s_rank">Rank / level</label>
+              <input class="input" id="s_rank" name="rank" placeholder="e.g. Heroic, Lv. 68">
+            </div>
+
+            <div class="field full">
+              <label for="s_price">Price you're hoping for</label>
+              <input class="input" id="s_price" name="priceRange" placeholder="e.g. ₦40,000 – ₦55,000 or open to offers">
+              <span class="hint">A realistic range gets you a faster offer.</span>
+            </div>
+
+            <div class="field full">
+              <label for="s_details">Describe the account <span class="req">*</span></label>
+              <textarea class="textarea" id="s_details" name="details" placeholder="Skins, bundles, rare items, rank history, linked socials, anything that adds value." required minlength="20"></textarea>
+              <span class="hint">The more detail you give, the closer our first offer will be.</span>
+            </div>
+
+            <div class="field full">
+              <label for="s_links">Proof links (optional)</label>
+              <input class="input" id="s_links" name="links" placeholder="Google Drive, Imgur, YouTube — anything we can check">
+            </div>
+
+            <div class="field full">
+              <label>Screenshots of the account</label>
+              <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload account screenshots">
+                <div class="dz-icon">📸</div>
+                <div class="dz-title">Tap to upload screenshots</div>
+                <div class="dz-hint">JPG or PNG · up to 6 images · 5MB each</div>
+                <input type="file" id="fileInput" accept="image/*" multiple hidden>
+              </div>
+              <div class="upload-previews" id="previews"></div>
+              <div class="upload-status" id="uploadStatus"></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary btn-lg" type="submit" id="submitBtn">Submit my account</button>
+            <span class="form-note" style="margin:0;">No obligation — we'll message you with an offer.</span>
+          </div>
+
+          <div class="status-box" id="statusBox" role="status" aria-live="polite"></div>
+        </form>
       </div>
 
-      <!--
-        HOW TO CONNECT YOUR OWN GOOGLE FORM
-        ------------------------------------
-        1. Create a Google Form with fields like:
-             • Your name
-             • WhatsApp number
-             • Game (short answer or dropdown: Free Fire, COD, Blood Strike, PUBG…)
-             • Account level / rank (short answer)
-             • Price range you're hoping for (short answer or dropdown)
-             • Describe your account & its features (PARAGRAPH / long answer —
-               this is the field where sellers explain skins, rank, rare items, etc.)
-        2. In Google Forms, go to Send → the "<>" embed icon → copy the iframe src URL.
-        3. Paste that URL below, replacing YOUR_FORM_ID.
-        4. Optional but recommended: in the Forms editor, click the palette icon
-           (top right) and set a dark background + a green accent color so the
-           form's own theme matches Panda Store instead of looking like plain
-           default Google Forms.
-      -->
-      <iframe
-        id="sellerForm"
-        src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true"
-        title="Panda Store seller submission form">
-        Loading…
-      </iframe>
+      <!-- ========================= SUCCESS ========================= -->
+      <div class="form-card success-stage" id="successStage">
+        <div class="tick-circle">✅</div>
+        <h2>Submission received</h2>
+        <p>Thanks — your account details are ready to send. Tap below to hand them to our team on WhatsApp and we'll come back to you, usually within 24 hours.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a href="#" class="btn btn-whatsapp" id="waHandoff" data-wa="Hi! I just submitted an account to sell — checking it came through.">Send on WhatsApp</a>
+          <a href="/#marketplace" class="btn btn-ghost">Back to marketplace</a>
+        </div>
+      </div>
+
+      <!-- ========================= SIDEBAR ========================= -->
+      <aside class="side-stack" id="sideStack">
+        <div class="side-card">
+          <h4>What happens next</h4>
+          <div class="side-list">
+            <div class="side-item"><span class="ico">1️⃣</span><span>We check your screenshots and inventory against live market prices.</span></div>
+            <div class="side-item"><span class="ico">2️⃣</span><span>You get a firm offer on WhatsApp — no lowball, no pressure.</span></div>
+            <div class="side-item"><span class="ico">3️⃣</span><span>You accept, we pay, and the listing goes live on the store.</span></div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h4>Need to talk first?</h4>
+          <p>Skip the form and message us directly — we answer fast.</p>
+          <div class="contact-lines">
+            <a class="contact-line" href="#" data-wa="Hi! I'd like to sell a gaming account.">
+              <span class="ico">💬</span>
+              <span><span class="label">WhatsApp</span><span class="value">Chat with the team</span></span>
+            </a>
+            <a class="contact-line" data-tel href="#">
+              <span class="ico">📞</span>
+              <span><span class="label">Call</span><span class="value">Store line</span></span>
+            </a>
+            <a class="contact-line" data-email href="#">
+              <span class="ico">✉️</span>
+              <span><span class="label">Email</span><span class="value">hello@</span></span>
+            </a>
+          </div>
+        </div>
+      </aside>
     </div>
 
-    <!-- shown once we detect the Google Form has been submitted -->
-    <div class="thankyou-stage" id="thankyouStage">
-      <div class="emoji">🐼✅</div>
-      <h3>Got it — thanks for the submission!</h3>
-      <p>We'll take a look at your account's features and your price range, and we'll contact you soon to move forward. 🎮💬</p>
-      <a href="index.html" class="btn btn-primary">Back to marketplace</a>
-    </div>
-
-    <div class="manual-confirm" id="manualConfirm">
-      <a onclick="showThankYou()">Already submitted the form? Tap here ✅</a>
+    <div class="tips-grid" id="tipsGrid">
+      <div class="tip">
+        <div class="icon">📝</div>
+        <h4>Be specific</h4>
+        <p>Exact skins, rank and level get reviewed and priced faster than vague descriptions.</p>
+      </div>
+      <div class="tip">
+        <div class="icon">💸</div>
+        <h4>Set a fair range</h4>
+        <p>Give a realistic number — we'll tell you honestly what it will sell for.</p>
+      </div>
+      <div class="tip">
+        <div class="icon">📱</div>
+        <h4>Keep WhatsApp open</h4>
+        <p>Offers go out on WhatsApp, usually within 24–48 hours of submission.</p>
+      </div>
     </div>
   </div>
 
-  <div class="sell-tips">
-    <div class="tip">
-      <div class="icon">📝</div>
-      <h4>Be specific</h4>
-      <p>List exact skins, rank, and level. Detailed listings get reviewed and priced faster.</p>
-    </div>
-    <div class="tip">
-      <div class="icon">💰</div>
-      <h4>Set a fair range</h4>
-      <p>Give a realistic price range — we'll help you land on a number buyers will actually pay.</p>
-    </div>
-    <div class="tip">
-      <div class="icon">📱</div>
-      <h4>Keep WhatsApp open</h4>
-      <p>Our team reaches out on WhatsApp once your submission is reviewed — usually within 24–48 hrs.</p>
+  <!-- Google Form fallback, shown only when FormSubmit is not configured -->
+  <div class="wrap" id="googleFallback" hidden style="padding-bottom:clamp(40px,6vw,70px);">
+    <div class="embed-shell">
+      <div class="embed-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span>Sell your account — submission form</span>
+      </div>
+      <div class="embed-frame">
+        <iframe id="googleFormFrame" title="Sell your account form" loading="lazy"></iframe>
+      </div>
     </div>
   </div>
-</div>
+</main>
 
-<footer>
-  <div class="wrap">
-    <div class="foot-bottom">
-      <span>© 2026 Panda Store. All rights reserved.</span>
-      <span>Made with 🐼 + 🎮 + a lot of energy drinks</span>
-    </div>
-  </div>
-</footer>
+<div data-footer></div>
+<div data-floaters></div>
 
-<script src="assets/script.js"></script>
+<script src="/assets/app.js"></script>
 <script>
-  // hide the spinner once the iframe finishes its first real load
-  const iframe = document.getElementById('sellerForm');
-  const loading = document.getElementById('formLoading');
-  let loadCount = 0;
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: 'sell' });
+  const cfg = state.settings || {};
 
-  iframe.addEventListener('load', () => {
-    loadCount++;
-    if(loadCount === 1){
-      // first load = the form itself has rendered
-      loading.style.display = 'none';
-    } else if(loadCount > 1){
-      // second load = Google Forms navigated internally after a submit
-      showThankYou();
+  const form = document.getElementById('sellForm');
+  const status = document.getElementById('statusBox');
+  const submitBtn = document.getElementById('submitBtn');
+  const previews = document.getElementById('previews');
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const uploadStatus = document.getElementById('uploadStatus');
+
+  let uploaded = [];
+  let cloudMode = null;
+  let googleFormShown = false;
+
+  function setStatus(message, kind = 'info') {
+    status.className = `status-box show ${kind}`;
+    status.textContent = message;
+  }
+
+  function clearStatus() {
+    status.className = 'status-box';
+    status.textContent = '';
+  }
+
+  /* -------------------------- image upload -------------------------- */
+  async function cloudinaryConfig() {
+    if (cloudMode) return cloudMode;
+    try {
+      cloudMode = await A.api('/api/cloudinary-public', { method: 'GET' });
+    } catch {
+      cloudMode = { ok: false };
+    }
+    return cloudMode;
+  }
+
+  async function uploadFile(file) {
+    const conf = await cloudinaryConfig();
+    if (!conf.ok) return null;
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', conf.preset);
+    if (conf.folder) fd.append('folder', conf.folder);
+
+    const res = await fetch(conf.uploadUrl, { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Upload failed');
+    const json = await res.json();
+    return json.secure_url;
+  }
+
+  function renderPreviews() {
+    previews.innerHTML = uploaded
+      .map(
+        (item, i) => `
+        <div class="upload-thumb">
+          <img src="${A.esc(item.url)}" alt="Screenshot ${i + 1}">
+          <button type="button" data-remove="${i}" aria-label="Remove image">✕</button>
+        </div>`
+      )
+      .join('');
+
+    previews.querySelectorAll('[data-remove]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        uploaded.splice(Number(btn.dataset.remove), 1);
+        renderPreviews();
+      });
+    });
+  }
+
+  async function handleFiles(files) {
+    const list = [...files].filter((f) => f.type.startsWith('image/')).slice(0, 6 - uploaded.length);
+    if (!list.length) return;
+
+    const conf = await cloudinaryConfig();
+    if (!conf.ok) {
+      setStatus('Image uploads are not configured yet — you can still submit without screenshots.', 'info');
+      return;
+    }
+
+    uploadStatus.classList.add('show');
+    for (const file of list) {
+      if (file.size > 5 * 1024 * 1024) {
+        uploadStatus.textContent = `"${file.name}" is over 5MB — skipped.`;
+        continue;
+      }
+      try {
+        uploadStatus.textContent = `Uploading ${file.name}…`;
+        const url = await uploadFile(file);
+        if (url) uploaded.push({ url, name: file.name });
+        renderPreviews();
+      } catch {
+        uploadStatus.textContent = `Could not upload ${file.name}.`;
+      }
+    }
+    uploadStatus.textContent = uploaded.length ? `${uploaded.length} image(s) attached.` : '';
+    setTimeout(() => uploadStatus.classList.remove('show'), 2500);
+  }
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') fileInput.click();
+  });
+  fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+  ['dragenter', 'dragover'].forEach((evt) =>
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('drag');
+    })
+  );
+  ['dragleave', 'drop'].forEach((evt) =>
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('drag');
+    })
+  );
+  dropzone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+
+  /* ---------------------------- submit ---------------------------- */
+  function showGoogleForm(notice) {
+    const url = cfg.googleFormSellUrl;
+    if (!url) {
+      setStatus(
+        notice || 'Submissions are not configured yet. Please message us on WhatsApp instead.',
+        'bad'
+      );
+      return;
+    }
+    document.getElementById('formLayout').hidden = true;
+    document.getElementById('tipsGrid').hidden = true;
+    const fallback = document.getElementById('googleFallback');
+    fallback.hidden = false;
+    document.getElementById('googleFormFrame').src = url;
+    fallback.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    A.toast('Using the backup submission form.');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearStatus();
+
+    const data = Object.fromEntries(new FormData(form).entries());
+    if (!data.name || !data.whatsapp || !data.game || !data.details || data.details.trim().length < 20) {
+      setStatus('Please fill in your name, WhatsApp number, game and a description of at least 20 characters.', 'bad');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting…';
+
+    try {
+      const payload = { ...data, images: uploaded.map((u) => u.url) };
+      const result = await A.api('/api/submit/sell', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (result.mode === 'google-form') {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit my account';
+        showGoogleForm();
+        return;
+      }
+
+      // Nothing configured to receive the form: hand off to WhatsApp so the lead is never lost.
+      if (result.mode === 'whatsapp') {
+        const msg = [
+          `Hi ${cfg.storeName || 'Panda Gaming Store'}! I'd like to sell an account.`,
+          '',
+          `🎮 Game: ${data.game}`,
+          `🏅 Rank / level: ${data.rank || '—'}`,
+          `💵 Asking price: ${data.priceRange || 'open to offers'}`,
+          '',
+          `📝 ${data.details}`,
+        ];
+        if (data.links) msg.push('', `🔗 Proof: ${data.links}`);
+        if (payload.images.length) msg.push('', `🖼️ Screenshots: ${payload.images.join(', ')}`);
+
+        const link = document.getElementById('waHandoff');
+        if (link) link.href = A.waLink(msg.join('\n'));
+        document.getElementById('formCard').hidden = true;
+        document.getElementById('successStage').classList.add('show');
+        document.querySelector('.form-layout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        A.toast('One more tap — send us the details on WhatsApp.');
+        return;
+      }
+
+      document.getElementById('formCard').hidden = true;
+      document.getElementById('successStage').classList.add('show');
+      document.querySelector('.form-layout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      setStatus(err.message || 'Something went wrong. Please try again.', 'bad');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit my account';
     }
   });
-
-  function showThankYou(){
-    document.getElementById('formFrameWrap').style.display = 'none';
-    document.getElementById('manualConfirm').style.display = 'none';
-    document.getElementById('thankyouStage').style.display = 'block';
-  }
+})();
 </script>
 </body>
 </html>
