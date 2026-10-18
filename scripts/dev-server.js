@@ -129,12 +129,15 @@ async function handleApi(req, res, pathname, url) {
     }
   }
 
-  if (!handler) {
-    res.status(404).json({ ok: false, error: `No API route for ${pathname}` });
-    return;
-  }
-
   const query = Object.fromEntries(url.searchParams.entries());
+  if (!handler) {
+    handler = await loadHandler('api/[...path].js');
+    if (!handler) {
+      res.status(404).json({ ok: false, error: `No API route for ${pathname}` });
+      return;
+    }
+    query.path = segments;
+  }
   if (usedPath && usedPath.includes('[id]')) {
     query.id = segments[segments.length - 1];
   }

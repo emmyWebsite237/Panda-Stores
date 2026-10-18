@@ -1,0 +1,31 @@
+PANDA STORES — VERCEL HOBBY FUNCTION-LIMIT PATCH
+
+This patch consolidates all API URLs behind one Vercel catch-all function. It preserves the existing endpoint URLs and handler logic.
+
+APPLY THE ZIP
+1. Extract this ZIP at the repository root (the same folder containing package.json and index.html), allowing files to merge/overwrite.
+2. DELETE the old API JavaScript files listed below from the repository. Do not delete api/[...path].js.
+3. Commit and push the changes, then redeploy on Vercel.
+
+DELETE THESE OLD FILES:
+api/_lib/auth.js
+api/_lib/seed.js
+api/_lib/store.js
+api/_lib/util.js
+api/admin/cloudinary-signature.js
+api/admin/login.js
+api/admin/logout.js
+api/admin/products.js
+api/admin/session.js
+api/admin/settings.js
+api/cloudinary-public.js
+api/config.js
+api/health.js
+api/products/[id].js
+api/products/index.js
+api/submit/contact.js
+api/submit/sell.js
+
+The replacement handler implementations are now under server/api/ (outside Vercel's /api function directory), and api/[...path].js is the single deployable API function. Existing API URLs such as /api/admin/login and /api/products remain unchanged.
+
+The patch also updates scripts/build-check.js so it reports deployable API routes rather than counting the shared handler modules, updates the local dev server fallback, and keeps outputDirectory set to the project root.

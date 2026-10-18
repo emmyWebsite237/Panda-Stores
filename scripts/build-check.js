@@ -156,7 +156,8 @@ try {
 }
 
 /* report */
-const apiCount = files.filter((f) => f.includes(`${path.sep}api${path.sep}`) && f.endsWith('.js')).length;
+const apiRoot = path.join(ROOT, 'api') + path.sep;
+const apiCount = files.filter((f) => f.startsWith(apiRoot) && f.endsWith('.js')).length;
 console.log(`\nFiles checked: ${files.length}`);
 console.log(`API routes:    ${apiCount}`);
 
