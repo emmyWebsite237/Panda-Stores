@@ -78,9 +78,63 @@ for (const file of files.filter((f) => f.endsWith('.html'))) {
   if (!/<title>/.test(html)) warnings.push(`${path.relative(ROOT, file)} has no <title>`);
 }
 
-/* 3. Required files */
-for (const required of ['vercel.json', 'package.json', '.env.example', 'index.html']) {
+/* 3. Required files
+ *
+ * Split into two tiers on purpose:
+ *  - HARD requirements break the deploy. Only files that git tracks normally
+ *    and that the app genuinely cannot run without belong here.
+ *  - SOFT requirements are dotfiles / docs. Git ignores dotfiles by default
+ *    and some tools strip them, so a missing one must never fail a
+ *    production deploy. We warn instead.
+ */
+const REQUIRED_FILES = ['vercel.json', 'package.json', 'index.html'];
+for (const required of REQUIRED_FILES) {
   if (!fs.existsSync(path.join(ROOT, required))) errors.push(`Missing ${required}`);
+}
+
+const RECOMMENDED_DOTFILES = ['.env.example', '.nvmrc', '.node-version', '.gitignore'];
+for (const file of RECOMMENDED_DOTFILES) {
+  if (!fs.existsSync(path.join(ROOT, file))) {
+    warnings.push(
+      `Missing ${file} (dotfiles are often excluded from git — the build continues). ` +
+        `Recommended so local setup, Node version and secret protection stay correct.`
+    );
+  }
+}
+
+/* 3b. Every process.env key the app reads should be documented.
+ *
+ * Read-only audit: it only WARNS, because env vars are configured in the
+ * Vercel dashboard and are not required for the build to succeed.
+ */
+try {
+  const envExample = path.join(ROOT, '.env.example');
+  if (fs.existsSync(envExample)) {
+    const documented = new Set(
+      fs
+        .readFileSync(envExample, 'utf8')
+        .split('\n')
+        .map((line) => line.match(/^\s*#?\s*([A-Z][A-Z0-9_]+)\s*=/))
+        .filter(Boolean)
+        .map((m) => m[1])
+    );
+
+    const used = new Set();
+    for (const file of files.filter((f) => f.endsWith('.js') && !f.includes(`${path.sep}scripts${path.sep}`))) {
+      const src = fs.readFileSync(file, 'utf8');
+      for (const m of src.matchAll(/process\.env\.([A-Z][A-Z0-9_]+)/g)) used.add(m[1]);
+      for (const m of src.matchAll(/process\.env\[['"]([A-Z][A-Z0-9_]+)['"]\]/g)) used.add(m[1]);
+    }
+    // Runtime-provided by the platform; not ours to document.
+    for (const runtime of ['NODE_ENV', 'PORT', 'VERCEL', 'VERCEL_ENV', 'CI']) used.delete(runtime);
+
+    const undocumented = [...used].filter((key) => !documented.has(key)).sort();
+    if (undocumented.length) {
+      warnings.push(`.env.example does not document: ${undocumented.join(', ')}`);
+    }
+  }
+} catch (err) {
+  warnings.push(`Could not audit .env.example: ${err.message}`);
 }
 
 /* 4. JSON validity */

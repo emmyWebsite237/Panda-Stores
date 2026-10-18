@@ -21,8 +21,17 @@ const SUPABASE_TABLE = process.env.SUPABASE_TABLE || 'panda_store';
 const g = globalThis;
 if (!g.__pandaStoreCache) g.__pandaStoreCache = { doc: null, dirty: false };
 
+/**
+ * Supabase service key. Accepts both spellings so whichever name is set on
+ * Vercel (or in .env.local) is picked up: SUPABASE_SERVICE_ROLE_KEY is the
+ * canonical Supabase name, SUPABASE_SERVICE_KEY is accepted as an alias.
+ */
+function supabaseServiceKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+}
+
 export function storageMode() {
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) return 'supabase';
+  if (process.env.SUPABASE_URL && supabaseServiceKey()) return 'supabase';
   if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) return 'upstash';
   return 'memory';
 }
@@ -31,7 +40,7 @@ export function storageMode() {
  * Supabase REST helpers
  * ---------------------------------------------------------------- */
 function sbHeaders() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = supabaseServiceKey();
   return {
     apikey: key,
     Authorization: `Bearer ${key}`,

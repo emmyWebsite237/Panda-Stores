@@ -1,5 +1,16 @@
 /** Small shared helpers for the API layer. */
 
+/**
+ * Cloudinary cloud name.
+ *
+ * Accepts CLOUDINARY_CLOUD_NAME (canonical) or NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+ * (the name used by earlier setups), so either variable set on Vercel works.
+ * The cloud name is public by design — it appears in every image URL.
+ */
+export function cloudinaryCloudName() {
+  return process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
+}
+
 export function readBody(req) {
   if (req.body == null) return {};
   if (typeof req.body === 'string') {
