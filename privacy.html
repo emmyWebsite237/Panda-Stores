@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy | Panda Gaming Store</title>
+<meta name="description" content="What data Panda Gaming Store collects when you buy, sell or contact us, why we hold it, how long we keep it and how to have it deleted.">
+<meta name="theme-color" content="#070A11">
+<meta property="og:title" content="Privacy Policy | Panda Gaming Store">
+<meta property="og:description" content="What we collect, why we hold it, and how to have it removed.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
+
+<main>
+  <div class="wrap">
+    <div class="page-hero">
+      <div class="eyebrow">🔒 Your data</div>
+      <h1>Privacy policy</h1>
+      <p>Short version: we collect what we need to sell you an account and nothing more. We do not sell data, and we do not keep it longer than it is useful.</p>
+    </div>
+
+    <section style="padding-top:0;">
+      <div class="prose">
+        <span class="updated">Last updated: <span id="updatedDate">—</span></span>
+
+        <h2>1. What we collect</h2>
+        <p><strong>When you buy:</strong> the account you chose, your WhatsApp number, and the messages you send us. Payment is arranged on WhatsApp; we do not store card details on this site, and we never ask for them.</p>
+        <p><strong>When you sell:</strong> your name, WhatsApp number, the game and details of the account, any screenshots or image links you attach, and your asking price.</p>
+        <p><strong>When you contact us:</strong> your name, the contact detail you give us, and the message itself.</p>
+        <p><strong>Automatically:</strong> standard server logs (IP address, browser, the page requested, timestamps) kept by our hosting provider for security and abuse prevention. Two small values are stored in your browser's local storage — your favourites and your recently viewed accounts. Both stay on your device and can be cleared at any time from your browser settings.</p>
+
+        <h2>2. Why we hold it</h2>
+        <ul>
+          <li>To complete the sale or purchase you asked for.</li>
+          <li>To respond to your enquiry or support request.</li>
+          <li>To honour the 24-hour post-sale support window.</li>
+          <li>To keep records of transactions for accounting and dispute resolution.</li>
+          <li>To keep the site secure and prevent fraud.</li>
+        </ul>
+
+        <h2>3. Who we share it with</h2>
+        <p>Only the services that make the site work:</p>
+        <ul>
+          <li><strong>Form handling</strong> — form submissions are relayed to our inbox through FormSubmit.</li>
+          <li><strong>Image hosting</strong> — uploaded screenshots are stored on Cloudinary.</li>
+          <li><strong>Hosting</strong> — the site and its API routes run on Vercel.</li>
+          <li><strong>WhatsApp</strong> — messages you send us go through WhatsApp under its own privacy terms.</li>
+        </ul>
+        <p>We do not sell your data to anyone, and we do not share it for advertising.</p>
+
+        <h2>4. How long we keep it</h2>
+        <p>Enquiries and submissions are kept while they are relevant to a live deal, then archived or deleted. Transaction records are kept for as long as accounting rules require. Server logs are kept by the hosting provider on its own schedule.</p>
+
+        <h2>5. Your choices</h2>
+        <p>You can ask us to show you what we hold about you, correct it, or delete it. Message us on WhatsApp or use the <a href="/contact">contact form</a> and we will action it. Deleting transaction records may not be possible while a legal or accounting obligation applies, and we will tell you if that is the case.</p>
+
+        <h2>6. Cookies and tracking</h2>
+        <p>This site does not use advertising cookies and does not run third-party analytics trackers. The only client-side storage is the favourites and recently-viewed list described above, plus a session cookie on the admin dashboard that lets store staff stay signed in.</p>
+
+        <h2>7. Security</h2>
+        <p>The site is served over HTTPS. Admin access is password-protected and session-based, and the password itself is never committed to the codebase. Uploads go to Cloudinary over HTTPS. No system is perfectly secure, but we keep the surface small and the credentials out of the repository.</p>
+
+        <h2>8. Children</h2>
+        <p>The store is intended for people aged 18 and over, or younger users with a parent or guardian's permission. We do not knowingly collect data from children.</p>
+
+        <h2>9. Changes</h2>
+        <p>If this policy changes materially we will update the date at the top of the page. Continued use of the site after an update means you accept the revised policy.</p>
+
+        <h2>10. Contact</h2>
+        <p>Privacy questions go to <a href="mailto:" data-email>our email</a> or via <a href="/contact">the contact form</a>. We aim to reply within two working days. <span data-store-name></span> operates from <span data-address>Lagos, Nigeria</span>.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: '' });
+  const s = state.settings || {};
+
+  document.getElementById('updatedDate').textContent = new Date().toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  if (s.privacyText && s.privacyText.trim().length > 40) {
+    const prose = document.querySelector('.prose');
+    prose.innerHTML =
+      '<span class="updated">Last updated: ' +
+      new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) +
+      '</span>' +
+      String(s.privacyText)
+        .split(/\n{2,}/)
+        .map((block) => {
+          const t = block.trim();
+          if (!t) return '';
+          if (/^#?\s*\d+\./.test(t) || t.length < 70) return `<h2>${A.esc(t)}</h2>`;
+          return `<p>${A.esc(t)}</p>`;
+        })
+        .join('');
+  }
+})();
+</script>
+</body>
+</html>

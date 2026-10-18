@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
 </head>
 <body>
@@ -87,7 +88,7 @@
         <p>Thanks for reaching out — your message is on its way. Expect a reply during our support hours, and usually well before.</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <a href="#" class="btn btn-whatsapp" id="waHandoff" data-wa="Hi! I just sent a support message.">Send on WhatsApp too</a>
-          <a href="/#marketplace" class="btn btn-ghost">Browse accounts</a>
+          <a href="/shop" class="btn btn-ghost">Browse accounts</a>
         </div>
       </div>
 
@@ -168,7 +169,7 @@
 <script>
 (async function () {
   const A = window.PandaApp;
-  const state = await A.init({ active: 'support' });
+  const state = await A.init({ active: '' });
   const cfg = state.settings || {};
 
   const form = document.getElementById('contactForm');

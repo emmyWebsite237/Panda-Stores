@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found | Panda Gaming Store</title>
+<meta name="description" content="That page does not exist. Browse the live inventory or head back to the shop.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#070A11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
+
+<main>
+  <div class="wrap">
+    <div class="err-page">
+      <div>
+        <div class="code">404</div>
+        <h1>That account slipped away</h1>
+        <p>The page you were looking for does not exist, or the listing has already been sold. The live inventory is one tap away.</p>
+        <div class="hero-ctas center" style="justify-content:center;">
+          <a href="/shop" class="btn btn-primary btn-lg">Browse accounts</a>
+          <a href="" data-wa="Hi! I followed a link that no longer works — can you help?" class="btn btn-ghost btn-lg">Ask on WhatsApp</a>
+        </div>
+        <p style="margin-top:24px; font-size:.82rem;">
+          Popular pages: <a href="/shop" style="color:var(--neon-cyan);">Shop</a> ·
+          <a href="/how-it-works" style="color:var(--neon-cyan);">How it works</a> ·
+          <a href="/faq" style="color:var(--neon-cyan);">FAQ</a> ·
+          <a href="/contact" style="color:var(--neon-cyan);">Contact</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  await window.PandaApp.init({ active: '' });
+})();
+</script>
+</body>
+</html>

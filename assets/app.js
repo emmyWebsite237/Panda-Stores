@@ -1,15 +1,44 @@
 /* ============================================================
    PANDA GAMING STORE — shared storefront runtime
    Loads settings from /api/config so nothing personal is hardcoded.
+   Navigation points at real pages (no more #section anchors).
    ============================================================ */
 
 const PandaApp = (() => {
   const state = {
     settings: null,
     products: [],
+    reviews: [],
+    siteRating: { rating: 0, reviewCount: 0 },
+    counts: { products: 0, inStock: 0 },
     loaded: false,
     error: null,
   };
+
+  /* --------------------------- site map --------------------------- */
+  // One source of truth for navigation, so header/footer/drawer never drift.
+  const PAGES = [
+    { key: 'home', href: '/', label: 'Home' },
+    { key: 'shop', href: '/shop', label: 'Shop' },
+    { key: 'how', href: '/how-it-works', label: 'How it works' },
+    { key: 'reviews', href: '/reviews', label: 'Reviews' },
+    { key: 'about', href: '/about', label: 'About' },
+    { key: 'faq', href: '/faq', label: 'FAQ' },
+  ];
+
+  const FOOTER_STORE = [
+    { href: '/shop', label: 'All accounts' },
+    { href: '/how-it-works', label: 'How it works' },
+    { href: '/sell', label: 'Sell your account' },
+    { href: '/reviews', label: 'Customer reviews' },
+  ];
+
+  const FOOTER_HELP = [
+    { href: '/contact', label: 'Contact & support' },
+    { href: '/faq', label: 'FAQ' },
+    { href: '/terms', label: 'Purchase terms' },
+    { href: '/privacy', label: 'Privacy policy' },
+  ];
 
   /* ----------------------------- helpers ----------------------------- */
 
@@ -73,25 +102,66 @@ const PandaApp = (() => {
     return data;
   }
 
-  /* --------------------------- bootstrap ---------------------------- */
+  /* ------------------------ localStorage kit ------------------------ */
+  // Everything here is wrapped: private-mode Safari throws on setItem.
 
-  async function loadConfig({ force = false } = {}) {
-    if (state.loaded && !force) return state;
-    try {
-      const data = await api('/api/config', { method: 'GET' });
-      state.settings = data.settings || {};
-      state.products = data.products || [];
-      state.error = null;
-    } catch (err) {
-      state.error = err;
-      // Keep the site usable: fall back to a neutral shape.
-      state.settings = state.settings || {};
-      state.products = state.products || [];
-      console.error('[panda] config load failed', err);
-    } finally {
-      state.loaded = true;
-    }
-    return state;
+  const LS = {
+    get(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
+      }
+    },
+    set(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch {
+        return false;
+      }
+    },
+  };
+
+  const WISH_KEY = 'panda:wishlist:v1';
+  const RECENT_KEY = 'panda:recently-viewed:v1';
+
+  function wishlist() {
+    const list = LS.get(WISH_KEY, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function inWishlist(id) {
+    return wishlist().includes(id);
+  }
+
+  function toggleWishlist(id) {
+    const list = wishlist();
+    const i = list.indexOf(id);
+    if (i > -1) list.splice(i, 1);
+    else list.unshift(id);
+    LS.set(WISH_KEY, list.slice(0, 60));
+    document.dispatchEvent(new CustomEvent('panda:wishlist', { detail: { id, list } }));
+    return list.includes(id);
+  }
+
+  function recentlyViewed() {
+    const list = LS.get(RECENT_KEY, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function rememberViewed(id) {
+    if (!id) return;
+    const list = recentlyViewed().filter((x) => x !== id);
+    list.unshift(id);
+    LS.set(RECENT_KEY, list.slice(0, 12));
+  }
+
+  /** Resolve stored ids against the catalogue we just loaded. */
+  function productsByIds(ids) {
+    const map = new Map(state.products.map((p) => [p.id, p]));
+    return ids.map((id) => map.get(id)).filter(Boolean);
   }
 
   /* ----------------------------- chrome ----------------------------- */
@@ -107,6 +177,14 @@ const PandaApp = (() => {
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 1.8a8.2 8.2 0 0 1 6.9 12.6l-.4.6.6 2.3-2.4-.6-.6.3A8.2 8.2 0 1 1 12 3.8Zm-3 3.5c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.8 4.2 3.8 2 .8 2.4.7 2.9.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2 0-.1-.2-.2-.4-.3l-1.5-.7c-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-2-1.2 7.4 7.4 0 0 1-1.4-1.7c-.1-.2 0-.3.1-.4l.4-.5c.2-.2.2-.3.3-.5v-.5l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.2Z"/></svg>',
     phone:
       '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 2.5c.5 0 1 .3 1.2.8l1.5 3c.2.5.1 1.1-.3 1.5l-1 1c-.2.2-.2.5-.1.7a12 12 0 0 0 5.6 5.6c.2.1.5.1.7-.1l1-1c.4-.4 1-.5 1.5-.3l3 1.5c.5.2.8.7.8 1.2v2.3c0 1.1-.9 2-2 1.9C9.9 20.2 3.8 14.1 3.4 5.5c0-1.1.8-2 1.9-2h1.3Z"/></svg>',
+    heart:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 3.9 12.5a5.1 5.1 0 0 1 0-7.2 5.1 5.1 0 0 1 7.2 0l.9.9.9-.9a5.1 5.1 0 0 1 7.2 0 5.1 5.1 0 0 1 0 7.2L12 20.6Z"/></svg>',
+    share:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.1c-.8 0-1.5.3-2 .8l-7.1-4.1c.1-.2.1-.5.1-.8s0-.6-.1-.8l7-4.1c.5.5 1.3.9 2.1.9a2.9 2.9 0 1 0-2.9-2.9c0 .3 0 .6.1.8L8.2 9.8a2.9 2.9 0 1 0 0 4.4l7.1 4.2c0 .2-.1.5-.1.7A2.9 2.9 0 1 0 18 16.1Z"/></svg>',
+    search:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.3 4.3-1.3 1.3-4.3-4.3A7.5 7.5 0 1 1 10.5 3Zm0 1.8a5.7 5.7 0 1 0 0 11.4 5.7 5.7 0 0 0 0-11.4Z"/></svg>',
+    star:
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5-5.9-3.2-5.9 3.2 1.2-6.5L2.5 9.5l6.6-.9 2.9-6Z"/></svg>',
   };
 
   function socialLinks() {
@@ -128,10 +206,17 @@ const PandaApp = (() => {
       .join('');
   }
 
+  function navLink(page, active) {
+    return `<a href="${page.href}" class="${page.key === active ? 'active' : ''}"${
+      page.key === active ? ' aria-current="page"' : ''
+    }>${page.label}</a>`;
+  }
+
   function mountChrome({ active = '' } = {}) {
     const s = state.settings || {};
+    const storeName = s.storeName || 'Panda Gaming Store';
 
-    // Header + drawer, injected so every page shares one source of truth.
+    /* ------------------------------ header ------------------------------ */
     const headerHost = document.querySelector('[data-header]');
     if (headerHost) {
       headerHost.innerHTML = `
@@ -139,35 +224,30 @@ const PandaApp = (() => {
           <nav class="site-nav" aria-label="Main navigation">
             <a href="/" class="brand">
               <span class="brand-badge" aria-hidden="true">🐼</span>
-              <span>${esc(s.storeName || 'Panda Gaming Store')}<small>Accounts · Verified</small></span>
+              <span>${esc(storeName)}<small>Accounts · Verified</small></span>
             </a>
             <div class="nav-links">
-              <a href="/#marketplace" class="${active === 'marketplace' ? 'active' : ''}">Marketplace</a>
-              <a href="/#how" class="${active === 'how' ? 'active' : ''}">How it works</a>
-              <a href="/support" class="${active === 'support' ? 'active' : ''}">Support</a>
-              <a href="/#faq">FAQ</a>
+              ${PAGES.map((p) => navLink(p, active)).join('')}
             </div>
             <div class="nav-actions">
-              <a href="/sell-account" class="btn btn-ghost">Sell an account</a>
+              <a href="/shop" class="nav-search-btn" aria-label="Search accounts" title="Search accounts">${ICONS.search}</a>
+              <a href="/sell" class="btn btn-ghost">Sell an account</a>
               <a href="${esc(waLink())}" target="_blank" rel="noopener" class="btn btn-primary">Chat on WhatsApp</a>
               <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">☰</button>
             </div>
           </nav>
         </header>
         <div class="drawer-scrim" id="drawerScrim"></div>
-        <aside class="nav-drawer" id="navDrawer" aria-hidden="true">
+        <aside class="nav-drawer" id="navDrawer" aria-hidden="true" aria-label="Mobile navigation">
           <div class="drawer-head">
-            <span class="brand"><span class="brand-badge">🐼</span> ${esc(s.storeName || 'Panda Store')}</span>
+            <span class="brand"><span class="brand-badge">🐼</span> ${esc(storeName)}</span>
             <button class="modal-x" id="drawerClose" aria-label="Close menu">✕</button>
           </div>
-          <a href="/">Home</a>
-          <a href="/#marketplace">Marketplace</a>
-          <a href="/#how">How it works</a>
-          <a href="/#reviews">Reviews</a>
-          <a href="/#faq">FAQ</a>
-          <a href="/support">Support</a>
+          ${PAGES.map((p) => navLink(p, active)).join('')}
+          <a href="/sell">Sell your account</a>
+          <a href="/contact">Contact &amp; support</a>
           <div class="drawer-cta">
-            <a href="/sell-account" class="btn btn-ghost btn-block">Sell an account</a>
+            <a href="/shop" class="btn btn-ghost btn-block">Browse accounts</a>
             <a href="${esc(waLink())}" target="_blank" rel="noopener" class="btn btn-primary btn-block">WhatsApp us</a>
           </div>
         </aside>`;
@@ -197,63 +277,62 @@ const PandaApp = (() => {
       window.addEventListener('scroll', onScroll, { passive: true });
     }
 
-    // Footer
+    /* ------------------------------ footer ------------------------------ */
     const footerHost = document.querySelector('[data-footer]');
     if (footerHost) {
       const games = [...new Set(state.products.map((p) => p.game).filter(Boolean))].slice(0, 4);
       footerHost.innerHTML = `
-        <footer class="site-footer" id="faq">
+        <footer class="site-footer">
           <div class="wrap">
             <div class="foot-grid">
               <div class="foot-brand">
                 <a href="/" class="brand">
                   <span class="brand-badge" aria-hidden="true">🐼</span>
-                  <span>${esc(s.storeName || 'Panda Gaming Store')}<small>Accounts · Verified</small></span>
+                  <span>${esc(storeName)}<small>Accounts · Verified</small></span>
                 </a>
                 <p>${esc(s.tagline || 'Verified gaming accounts, delivered in minutes.')}</p>
                 <div class="socials">${socialLinks()}</div>
               </div>
               <div class="foot-col">
-                <h4>Marketplace</h4>
+                <h4>Shop by game</h4>
                 ${(games.length ? games : ['Free Fire', 'Call of Duty', 'PUBG Mobile', 'Valorant'])
-                  .map((g) => `<a href="/#marketplace" data-game-link="${esc(g)}">${esc(g)}</a>`)
+                  .map((g) => `<a href="/shop?game=${encodeURIComponent(g)}">${esc(g)}</a>`)
                   .join('')}
+                <a href="/shop">All accounts →</a>
               </div>
               <div class="foot-col">
                 <h4>Store</h4>
-                <a href="/#how">How it works</a>
-                <a href="/#reviews">Reviews</a>
-                <a href="/sell-account">Sell your account</a>
-                <a href="/support">Contact & support</a>
+                ${FOOTER_STORE.map((l) => `<a href="${l.href}">${l.label}</a>`).join('')}
               </div>
               <div class="foot-col">
-                <h4>Policies</h4>
-                <a href="/#terms" data-open-terms>Purchase terms</a>
-                <a href="/support">Report an issue</a>
-                <a href="/support">Request an account</a>
-                <a href="/#faq">FAQ</a>
+                <h4>Help &amp; legal</h4>
+                ${FOOTER_HELP.map((l) => `<a href="${l.href}">${l.label}</a>`).join('')}
               </div>
             </div>
             <div class="foot-bottom">
-              <span>© ${new Date().getFullYear()} ${esc(s.storeName || 'Panda Gaming Store')}. All rights reserved.</span>
-              <span>${esc(s.supportHours || 'Mon – Sat · 9:00am – 9:00pm')} · ${esc(s.responseTime || 'Fast replies')}</span>
+              <span>© ${new Date().getFullYear()} ${esc(storeName)}. All rights reserved.</span>
+              <span>${esc(s.supportHours || 'Mon – Sat · 9:00am – 9:00pm')} · ${esc(
+        s.responseTime || 'Fast replies'
+      )}</span>
             </div>
           </div>
         </footer>`;
     }
 
-    // Floating call + WhatsApp buttons
+    /* -------------------------- floating buttons -------------------------- */
     const floatHost = document.querySelector('[data-floaters]');
     if (floatHost) {
       const tel = telLink();
+      const wa = waLink('Hi! I would like to buy a gaming account.');
       floatHost.innerHTML = `
         <div class="float-actions">
           ${tel ? `<a class="fab fab-call" href="${esc(tel)}" aria-label="Call the store" title="Call us">${ICONS.phone}</a>` : ''}
-          <a class="fab fab-wa" href="${esc(waLink())}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="WhatsApp">${ICONS.whatsapp}</a>
+          ${wa ? `<a class="fab fab-wa" href="${esc(wa)}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="WhatsApp">${ICONS.whatsapp}</a>` : ''}
         </div>`;
     }
 
-    // Any element with data-wa gets the live WhatsApp link
+    /* --------------------------- data bindings --------------------------- */
+
     document.querySelectorAll('[data-wa]').forEach((el) => {
       const prefix = el.getAttribute('data-wa') || '';
       el.setAttribute('href', waLink(prefix || ''));
@@ -272,7 +351,7 @@ const PandaApp = (() => {
     });
 
     document.querySelectorAll('[data-store-name]').forEach((el) => {
-      el.textContent = s.storeName || 'Panda Gaming Store';
+      el.textContent = storeName;
     });
 
     document.querySelectorAll('[data-email]').forEach((el) => {
@@ -286,18 +365,48 @@ const PandaApp = (() => {
 
     document.querySelectorAll('[data-open-terms]').forEach((el) => {
       el.addEventListener('click', (e) => {
+        // Real page now — the anchor is a genuine link to /terms.
+        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
         e.preventDefault();
         openTerms();
       });
     });
 
-    // announcement strip
     document.querySelectorAll('[data-announcement]').forEach((el) => {
-      if (s.announcement) {
-        el.textContent = s.announcement;
-      } else {
-        el.style.display = 'none';
-      }
+      if (s.announcement) el.textContent = s.announcement;
+      else el.style.display = 'none';
+    });
+
+    document.querySelectorAll('[data-hero-headline]').forEach((el) => {
+      if (s.heroHeadline) el.textContent = s.heroHeadline;
+    });
+
+    document.querySelectorAll('[data-hero-subline]').forEach((el) => {
+      if (s.heroSubline) el.textContent = s.heroSubline;
+    });
+
+    document.querySelectorAll('[data-tagline]').forEach((el) => {
+      if (s.tagline) el.textContent = s.tagline;
+    });
+
+    document.querySelectorAll('[data-about-text]').forEach((el) => {
+      if (s.aboutText) el.textContent = s.aboutText;
+    });
+
+    document.querySelectorAll('[data-support-hours]').forEach((el) => {
+      el.textContent = s.supportHours || 'Mon – Sat · 9:00am – 9:00pm';
+    });
+
+    document.querySelectorAll('[data-response-time]').forEach((el) => {
+      el.textContent = s.responseTime || 'Usually replies in under 10 minutes';
+    });
+
+    document.querySelectorAll('[data-address]').forEach((el) => {
+      el.textContent = s.address || 'Lagos, Nigeria · 100% online delivery';
+    });
+
+    document.querySelectorAll('[data-currency-note]').forEach((el) => {
+      el.textContent = s.currencyNote || '';
     });
   }
 
@@ -308,8 +417,7 @@ const PandaApp = (() => {
   function openTerms() {
     const scrim = document.getElementById('termsModal');
     if (!scrim) {
-      // No modal on this page — go to the storefront FAQ/terms section.
-      window.location.href = '/#terms';
+      window.location.href = '/terms';
       return;
     }
     scrim.classList.add('open');
@@ -346,7 +454,7 @@ const PandaApp = (() => {
     if (!container) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const emojis = ['🎮', '🔥', '⭐', '🐼', '🏆', '💥', '🎯', '🛡️', '💰', '✨'];
-    const count = window.innerWidth < 700 ? 12 : 24;
+    const count = window.innerWidth < 700 ? 10 : 20;
     const frag = document.createDocumentFragment();
     for (let i = 0; i < count; i += 1) {
       const el = document.createElement('span');
@@ -376,6 +484,8 @@ const PandaApp = (() => {
       el = document.createElement('div');
       el.id = 'appToast';
       el.className = 'toast';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
       document.body.appendChild(el);
     }
     el.textContent = message;
@@ -385,6 +495,24 @@ const PandaApp = (() => {
     toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
   }
 
+  /* --------------------------- rating bits --------------------------- */
+
+  function stars(rating) {
+    const r = Math.round((Number(rating) || 0) * 2) / 2;
+    const full = Math.floor(r);
+    const half = r % 1 >= 0.5;
+    return '★'.repeat(full) + (half ? '⯨' : '') + '☆'.repeat(Math.max(0, 5 - full - (half ? 1 : 0)));
+  }
+
+  function ratingHtml(p) {
+    if (!p.reviewCount) return '';
+    return `<span class="rating-inline" title="${p.rating} out of 5 from ${p.reviewCount} review${
+      p.reviewCount === 1 ? '' : 's'
+    }"><span class="stars">${stars(p.rating)}</span><span class="rating-num">${esc(
+      String(p.rating)
+    )}</span><span class="rating-count">(${p.reviewCount})</span></span>`;
+  }
+
   /* --------------------------- product card -------------------------- */
 
   function productCard(p) {
@@ -392,32 +520,128 @@ const PandaApp = (() => {
     const stock = Number(p.stock) || 0;
     const stockClass = stock === 0 ? 'out' : stock <= 2 ? 'low' : '';
     const stockLabel = stock === 0 ? 'Sold out' : stock <= 2 ? `Only ${stock} left` : `${stock} in stock`;
+    const saved = inWishlist(p.id);
 
     return `
-      <a class="product-card" href="/account/${encodeURIComponent(p.id)}" aria-label="${esc(p.title)}">
+      <article class="product-card">
         <div class="product-media">
-          ${cover ? `<img src="${esc(cover)}" alt="${esc(p.title)}" loading="lazy" decoding="async">` : `<div class="ph">🎮</div>`}
+          <a href="/account/${encodeURIComponent(p.id)}" class="product-media-link" aria-label="${esc(
+      p.title
+    )}">
+            ${
+              cover
+                ? `<img src="${esc(cover)}" alt="${esc(p.title)}" loading="eager" decoding="async">`
+                : `<div class="ph">🎮</div>`
+            }
+          </a>
           <div class="badge-row">
             <span class="badge">${esc(p.game || 'Gaming')}</span>
             ${p.featured ? '<span class="badge badge-featured">Featured</span>' : stock === 0 ? '<span class="badge badge-out">Sold out</span>' : ''}
           </div>
+          <button class="wish-btn ${saved ? 'saved' : ''}" data-wish="${esc(p.id)}" aria-label="${
+      saved ? 'Remove from favourites' : 'Save to favourites'
+    }" aria-pressed="${saved}" title="${saved ? 'Remove from favourites' : 'Save to favourites'}">${ICONS.heart}</button>
         </div>
         <div class="product-body">
           <div class="product-game">${esc(p.game || 'Gaming account')}</div>
-          <h3 class="product-title">${esc(p.title)}</h3>
+          <h3 class="product-title"><a href="/account/${encodeURIComponent(p.id)}">${esc(p.title)}</a></h3>
+          ${ratingHtml(p)}
           <div class="product-price">
             <span class="price-ngn">${nairaFrom(p.priceUsd)}</span>
             <span class="price-usd">${usd(p.priceUsd)}</span>
           </div>
           <div class="product-foot">
             <span class="stock-pill ${stockClass}"><span class="dot"></span>${stockLabel}</span>
-            <span class="view-link">View →</span>
+            <a class="view-link" href="/account/${encodeURIComponent(p.id)}">View →</a>
           </div>
         </div>
-      </a>`;
+      </article>`;
+  }
+
+  /** Delegated so every card/link on the page works, including re-renders. */
+  function wireWishlistButtons(root = document) {
+    root.querySelectorAll('[data-wish]').forEach((btn) => {
+      if (btn.dataset.wired) return;
+      btn.dataset.wired = '1';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.dataset.wish;
+        const saved = toggleWishlist(id);
+        btn.classList.toggle('saved', saved);
+        btn.setAttribute('aria-pressed', String(saved));
+        toast(saved ? 'Saved to favourites' : 'Removed from favourites');
+      });
+    });
+  }
+
+  /* ------------------------- reviews rendering ------------------------- */
+
+  function reviewCard(r) {
+    return `
+      <div class="review-card">
+        <div class="review-top">
+          <div class="avatar">${esc((r.name || 'G').trim().charAt(0).toUpperCase())}</div>
+          <div>
+            <div class="review-name">${esc(r.name || 'Gamer')}</div>
+            <div class="review-sub">${esc(
+              new Date(r.createdAt || Date.now()).toLocaleDateString('en-GB', {
+                month: 'short',
+                year: 'numeric',
+              })
+            )}</div>
+          </div>
+        </div>
+        <div class="stars stars-static">${stars(r.rating)}</div>
+        <p class="review-body">${esc(r.body || '')}</p>
+        ${r.verified ? '<span class="review-verified">✓ VERIFIED PURCHASE</span>' : ''}
+      </div>`;
+  }
+
+  /* ------------------------------ share ------------------------------ */
+
+  async function shareProduct(product, buttonEl) {
+    const url = `${window.location.origin}/account/${encodeURIComponent(product.id)}`;
+    const text = `${product.title} — ${nairaFrom(product.priceUsd)} on ${
+      state.settings?.storeName || 'Panda Gaming Store'
+    }`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: product.title, text, url });
+        return;
+      }
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      toast('Link copied — share it anywhere');
+      if (buttonEl) buttonEl.classList.add('copied');
+    } catch (err) {
+      // User dismissed the share sheet: not an error worth shouting about.
+      if (err?.name === 'AbortError') return;
+      window.prompt('Copy this link:', `${text}\n${url}`);
+    }
   }
 
   /* ------------------------------ init ------------------------------- */
+
+  async function loadConfig({ force = false } = {}) {
+    if (state.loaded && !force) return state;
+    try {
+      const data = await api('/api/config', { method: 'GET' });
+      state.settings = data.settings || {};
+      state.products = data.products || [];
+      state.reviews = data.reviews || [];
+      state.siteRating = data.siteRating || { rating: 0, reviewCount: 0 };
+      state.counts = data.counts || { products: 0, inStock: 0 };
+      state.error = null;
+    } catch (err) {
+      state.error = err;
+      state.settings = state.settings || {};
+      state.products = state.products || [];
+      console.error('[panda] config load failed', err);
+    } finally {
+      state.loaded = true;
+    }
+    return state;
+  }
 
   async function init(options = {}) {
     await loadConfig();
@@ -425,6 +649,7 @@ const PandaApp = (() => {
     initMarquee();
     mountChrome(options);
     wireTermsModal();
+    wireWishlistButtons();
     document.dispatchEvent(new CustomEvent('panda:ready', { detail: state }));
     return state;
   }
@@ -442,9 +667,22 @@ const PandaApp = (() => {
     telLink,
     socialLinks,
     productCard,
+    reviewCard,
+    stars,
+    ratingHtml,
     toast,
     openTerms,
     closeTerms,
+    // wishlist + recently viewed
+    wishlist,
+    inWishlist,
+    toggleWishlist,
+    wireWishlistButtons,
+    recentlyViewed,
+    rememberViewed,
+    productsByIds,
+    shareProduct,
+    PAGES,
     ICONS,
   };
 })();

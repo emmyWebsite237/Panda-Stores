@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
 </head>
 <body>
@@ -21,7 +22,8 @@
   <div class="wrap">
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a><span class="sep">/</span>
-      <a href="/#marketplace">Marketplace</a><span class="sep">/</span>
+      <a href="/shop">Shop</a><span class="sep">/</span>
+      <a href="#" id="crumbGame">Accounts</a><span class="sep">/</span>
       <span id="crumbName">Account</span>
     </nav>
   </div>
@@ -39,9 +41,27 @@
     </div>
   </div>
 
+  <!-- ==================== REVIEWS ==================== -->
+  <div class="wrap" id="reviewsWrap" hidden>
+    <div class="review-section">
+      <h2 style="font-size:clamp(1.2rem,2.6vw,1.6rem); margin-bottom:16px;">
+        What buyers say
+        <span id="reviewAvg" class="rating-inline" style="margin-left:8px; font-size:.8rem;"></span>
+      </h2>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+  </div>
+
+  <div class="wrap" id="recentWrap" hidden>
+    <div style="border-top:1px solid var(--panel-line); padding-top:clamp(28px,4vw,44px); margin-bottom:clamp(20px,3vw,30px);">
+      <h2 style="font-size:clamp(1.2rem,2.6vw,1.6rem); margin-bottom:16px;">Recently viewed</h2>
+      <div class="product-rail" id="recentRail"></div>
+    </div>
+  </div>
+
   <div class="wrap" id="relatedWrap" hidden>
     <div style="border-top:1px solid var(--panel-line); padding-top:clamp(28px,4vw,44px); margin-bottom:clamp(30px,5vw,60px);">
-      <h2 style="font-size:clamp(1.2rem,2.6vw,1.6rem); margin-bottom:16px;">More from this game</h2>
+      <h2 style="font-size:clamp(1.2rem,2.6vw,1.6rem); margin-bottom:16px;" id="relatedTitle">You may also like</h2>
       <div class="related-grid" id="relatedGrid"></div>
     </div>
   </div>
@@ -81,7 +101,7 @@
 <script>
 (async function () {
   const A = window.PandaApp;
-  const state = await A.init({ active: 'marketplace' });
+  const state = await A.init({ active: 'shop' });
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id') || window.location.pathname.split('/').filter(Boolean).pop();
@@ -91,6 +111,7 @@
 
   let data;
   try {
+    // /api/products/:id is kept alive by a vercel rewrite → api/product.js
     data = await A.api(`/api/products/${encodeURIComponent(id)}`);
   } catch (err) {
     return showNotFound(err.status === 404 ? 'That account is no longer listed.' : 'We could not load this account right now.');
@@ -104,12 +125,36 @@
   document.title = `${p.title} — ${cfg.storeName || 'Panda Gaming Store'}`;
   document.getElementById('crumbName').textContent = p.title;
 
+  // Breadcrumb links back into the filtered shop, and OG tags follow the listing.
+  const crumbGame = document.getElementById('crumbGame');
+  if (crumbGame) {
+    crumbGame.textContent = p.game || 'Accounts';
+    crumbGame.href = `/shop?game=${encodeURIComponent(p.game || '')}`;
+  }
+  const setMeta = (sel, attr, value) => {
+    const el = document.querySelector(sel);
+    if (el) el.setAttribute(attr, value);
+  };
+  setMeta('meta[name="description"]', 'content', (p.description || p.title).slice(0, 158));
+  const og = document.createElement('meta');
+  og.setAttribute('property', 'og:title');
+  og.setAttribute('content', `${p.title} — ${A.nairaFrom(p.priceUsd)}`);
+  document.head.appendChild(og);
+
   const images = (p.images && p.images.length ? p.images : [p.cover]).filter(Boolean);
   if (p.cover && images[0] !== p.cover) {
     const i = images.indexOf(p.cover);
     if (i > 0) images.splice(i, 1);
     images.unshift(p.cover);
   }
+
+  const ogImg = document.createElement('meta');
+  ogImg.setAttribute('property', 'og:image');
+  ogImg.setAttribute('content', images[0] || '');
+  document.head.appendChild(ogImg);
+
+  // Remember this visit for the recently-viewed rail.
+  A.rememberViewed(p.id);
 
   const stock = Number(p.stock) || 0;
   const stockClass = stock === 0 ? 'out' : stock <= 2 ? 'low' : '';
@@ -136,6 +181,8 @@
       <div class="detail-info">
         <div class="product-game">${A.esc(p.game || 'Gaming account')}</div>
         <h1>${A.esc(p.title)}</h1>
+
+        ${p.reviewCount ? `<div style="margin:8px 0 12px;">${A.ratingHtml(p)}</div>` : ''}
 
         <div class="detail-availability">
           <span class="stock-pill ${stockClass}"><span class="dot"></span>${stockLabel}</span>
@@ -165,6 +212,15 @@
             ${soldOut ? 'Sold out — ask for a similar account' : 'Buy on WhatsApp'}
           </button>
           <a class="btn btn-ghost btn-block" id="askBtn" href="#">Ask a question first</a>
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn btn-ghost btn-sm share-btn" id="shareBtn" type="button">
+            ${A.ICONS.share} Share
+          </button>
+          <button class="btn btn-ghost btn-sm ${A.inWishlist(p.id) ? 'saved-wish' : ''}" id="detailWish" type="button">
+            ${A.ICONS.heart} <span>${A.inWishlist(p.id) ? 'Saved' : 'Save'}</span>
+          </button>
         </div>
 
         <div class="detail-meta-grid">
@@ -306,6 +362,14 @@
 
   agreeBtn.addEventListener('click', () => {
     if (agreeBtn.disabled) return;
+
+    // Log the enquiry BEFORE leaving for WhatsApp. Fire-and-forget: a failed
+    // log must never stop the buyer completing the purchase.
+    A.api('/api/submit/order', {
+      method: 'POST',
+      body: JSON.stringify({ productId: p.id, productTitle: p.title }),
+    }).catch(() => {});
+
     window.open(A.waLink(message()), '_blank', 'noopener');
     closeModal();
     A.toast('Opening WhatsApp — send the message to confirm your order.');
@@ -317,13 +381,64 @@
   );
 
   /* ------------------------------ related ------------------------------ */
-  if (data.related && data.related.length) {
+  const relatedWithStock = (data.related || []).map((r) => ({
+    ...r,
+    images: r.images && r.images.length ? r.images : [r.cover],
+  }));
+
+  if (relatedWithStock.length) {
     const wrap = document.getElementById('relatedWrap');
     wrap.hidden = false;
-    document.getElementById('relatedGrid').innerHTML = data.related
-      .map((r) => A.productCard({ ...r, images: [r.cover], stock: 1 }))
-      .join('');
+    // Only name the game when every related listing is actually from it.
+    const allSameGame = relatedWithStock.every((r) => r.game === p.game);
+    document.getElementById('relatedTitle').textContent = allSameGame
+      ? `More ${p.game || 'gaming'} accounts`
+      : 'You may also like';
+    document.getElementById('relatedGrid').innerHTML = relatedWithStock.map(A.productCard).join('');
+    A.wireWishlistButtons(document.getElementById('relatedGrid'));
   }
+
+  /* ------------------------------ reviews ------------------------------ */
+  const reviews = data.reviews || [];
+  if (reviews.length) {
+    const wrap = document.getElementById('reviewsWrap');
+    wrap.hidden = false;
+    document.getElementById('reviewAvg').innerHTML =
+      `<span class="stars">${A.stars(p.rating)}</span> ${p.rating} · ${p.reviewCount} review${
+        p.reviewCount === 1 ? '' : 's'
+      }`;
+    document.getElementById('reviewList').innerHTML = reviews.map(A.reviewCard).join('');
+  }
+
+  /* -------------------------- recently viewed -------------------------- */
+  const recent = A.productsByIds(A.recentlyViewed())
+    .filter((r) => r.id !== p.id)
+    .slice(0, 8);
+  if (recent.length) {
+    const wrap = document.getElementById('recentWrap');
+    wrap.hidden = false;
+    document.getElementById('recentRail').innerHTML = recent.map(A.productCard).join('');
+    A.wireWishlistButtons(document.getElementById('recentRail'));
+  }
+
+  /* ---------------------------- share / save ---------------------------- */
+  document.getElementById('shareBtn')?.addEventListener('click', (e) => {
+    A.shareProduct(p, e.currentTarget);
+  });
+
+  const detailWish = document.getElementById('detailWish');
+  function syncWish() {
+    const saved = A.inWishlist(p.id);
+    detailWish.classList.toggle('saved-wish', saved);
+    detailWish.querySelector('span').textContent = saved ? 'Saved' : 'Save';
+    detailWish.setAttribute('aria-pressed', String(saved));
+  }
+  detailWish?.addEventListener('click', () => {
+    const saved = A.toggleWishlist(p.id);
+    syncWish();
+    A.toast(saved ? 'Saved to favourites' : 'Removed from favourites');
+  });
+  syncWish();
 
   /* ---------------------------- not found ---------------------------- */
   function showNotFound(msg) {
@@ -332,7 +447,7 @@
         <div style="font-size:46px;margin-bottom:12px;">🐼</div>
         <h1>Nothing here</h1>
         <p>${A.esc(msg)}</p>
-        <a href="/#marketplace" class="btn btn-primary">Back to the marketplace</a>
+        <a href="/shop" class="btn btn-primary">Back to the shop</a>
       </div>`;
     document.getElementById('relatedWrap')?.remove();
   }

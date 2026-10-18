@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 /**
  * Build verification for a no-bundler Vercel deployment.
- * Checks that every referenced asset exists, every JS file parses, and every
- * HTML page is structurally sound. Exits non-zero on failure.
+ *
+ * Checks that every referenced asset exists, every JS file parses, every HTML
+ * page is structurally sound, and — critically — that the deployment stays
+ * inside the Vercel Hobby plan's serverless-function allowance (12).
+ *
+ * Exits non-zero on failure.
  */
 
 import fs from 'node:fs';
@@ -12,6 +16,10 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
+
+/** Vercel Hobby plan hard limit. The build fails above this so a deploy can
+ *  never be rejected again for exceeding it. */
+const MAX_FUNCTIONS = 12;
 
 const errors = [];
 const warnings = [];
@@ -30,7 +38,46 @@ function walk(dir) {
 
 const files = walk(ROOT);
 
-/* 1. JS syntax */
+/* ================================================================== *
+ * 0. Serverless function count
+ *
+ * Vercel turns every .js/.ts/.mjs file in the root `api` directory into a
+ * deployed function — including nested ones. Anything outside `api/` is a
+ * shared module and costs nothing. We count exactly the same way, then fail
+ * when the total exceeds the plan allowance.
+ * ================================================================== */
+const API_DIR = path.join(ROOT, 'api');
+
+function serverlessFunctions() {
+  if (!fs.existsSync(API_DIR)) return [];
+  return walk(API_DIR)
+    .filter((f) => /\.(js|mjs|cjs|ts)$/.test(f))
+    .map((f) => path.relative(ROOT, f).split(path.sep).join('/'))
+    .sort();
+}
+
+const functions = serverlessFunctions();
+
+if (!functions.length) {
+  errors.push('No serverless functions found in api/ — every endpoint would 404.');
+} else if (functions.length > MAX_FUNCTIONS) {
+  errors.push(
+    `Too many serverless functions: ${functions.length} found, the Vercel Hobby plan allows ${MAX_FUNCTIONS}. ` +
+      `Merge related routes into one router function (see api/admin.js for the pattern), or move shared code out of api/.`
+  );
+}
+
+// Every function should be importable as a handler, not a helpers dump.
+for (const fn of functions) {
+  const src = fs.readFileSync(path.join(ROOT, fn), 'utf8');
+  if (!/export\s+default/.test(src)) {
+    errors.push(`${fn} has no default export, so Vercel cannot use it as a handler`);
+  }
+}
+
+/* ================================================================== *
+ * 1. JS syntax
+ * ================================================================== */
 for (const file of files.filter((f) => f.endsWith('.js'))) {
   try {
     execFileSync(process.execPath, ['--check', file], { stdio: 'pipe' });
@@ -40,7 +87,9 @@ for (const file of files.filter((f) => f.endsWith('.js'))) {
   }
 }
 
-/* 2. Referenced local assets + HTML sanity */
+/* ================================================================== *
+ * 2. Referenced local assets + HTML sanity
+ * ================================================================== */
 const vercelConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
 
 /** A URL is served if a vercel rewrite covers it (e.g. /sell-account → /sell.html). */
@@ -59,9 +108,12 @@ function rewriteMatches(pathname) {
   });
 }
 
-for (const file of files.filter((f) => f.endsWith('.html'))) {
+const htmlFiles = files.filter((f) => f.endsWith('.html'));
+
+for (const file of htmlFiles) {
   const html = fs.readFileSync(file, 'utf8');
-  const refs = [...html.matchAll(/(?:src|href)="(\/[^"#?]+)"/g)].map((m) => m[1]);
+  // Static refs only: ignore anchors (#…), query strings and template holes.
+  const refs = [...html.matchAll(/(?:src|href)="(\/[^"#?{}]+)"/g)].map((m) => m[1]);
 
   for (const ref of refs) {
     if (ref.startsWith('/api/')) continue;
@@ -75,10 +127,32 @@ for (const file of files.filter((f) => f.endsWith('.html'))) {
   if (!html.includes('<meta name="viewport"')) {
     errors.push(`${path.relative(ROOT, file)} is missing a viewport meta tag`);
   }
-  if (!/<title>/.test(html)) warnings.push(`${path.relative(ROOT, file)} has no <title>`);
+  if (!/<title>/.test(html)) errors.push(`${path.relative(ROOT, file)} has no <title>`);
+  if (!/<meta name="description"/.test(html)) {
+    warnings.push(`${path.relative(ROOT, file)} has no meta description`);
+  }
 }
 
-/* 3. Required files
+/* ================================================================== *
+ * 2b. No dead in-page anchors between pages
+ *
+ * Nav/footer links must point at real pages now, not at "#section" on the
+ * home page. We only flag anchors that look like cross-page jumps.
+ * ================================================================== */
+for (const file of htmlFiles) {
+  const html = fs.readFileSync(file, 'utf8');
+  const anchors = [...html.matchAll(/href="(\/(?:index\.html)?#[\w-]+)"/g)].map((m) => m[1]);
+  if (anchors.length) {
+    warnings.push(
+      `${path.relative(ROOT, file)} still has ${anchors.length} legacy anchor link(s): ${[
+        ...new Set(anchors),
+      ].join(', ')}`
+    );
+  }
+}
+
+/* ================================================================== *
+ * 3. Required files
  *
  * Split into two tiers on purpose:
  *  - HARD requirements break the deploy. Only files that git tracks normally
@@ -86,10 +160,28 @@ for (const file of files.filter((f) => f.endsWith('.html'))) {
  *  - SOFT requirements are dotfiles / docs. Git ignores dotfiles by default
  *    and some tools strip them, so a missing one must never fail a
  *    production deploy. We warn instead.
- */
-const REQUIRED_FILES = ['vercel.json', 'package.json', 'index.html'];
+ * ================================================================== */
+const REQUIRED_FILES = ['vercel.json', 'package.json', 'index.html', '404.html'];
 for (const required of REQUIRED_FILES) {
   if (!fs.existsSync(path.join(ROOT, required))) errors.push(`Missing ${required}`);
+}
+
+/** Every public page must exist — these are the URLs the nav links to. */
+const REQUIRED_PAGES = [
+  'shop.html',
+  'product.html',
+  'about.html',
+  'faq.html',
+  'how-it-works.html',
+  'terms.html',
+  'privacy.html',
+  'reviews.html',
+  'contact.html',
+  'sell.html',
+  'pandaviki001stores.html',
+];
+for (const page of REQUIRED_PAGES) {
+  if (!fs.existsSync(path.join(ROOT, page))) errors.push(`Missing page: ${page}`);
 }
 
 const RECOMMENDED_DOTFILES = ['.env.example', '.nvmrc', '.node-version', '.gitignore'];
@@ -102,11 +194,12 @@ for (const file of RECOMMENDED_DOTFILES) {
   }
 }
 
-/* 3b. Every process.env key the app reads should be documented.
+/* ================================================================== *
+ * 3b. Every process.env key the app reads should be documented.
  *
  * Read-only audit: it only WARNS, because env vars are configured in the
  * Vercel dashboard and are not required for the build to succeed.
- */
+ * ================================================================== */
 try {
   const envExample = path.join(ROOT, '.env.example');
   if (fs.existsSync(envExample)) {
@@ -120,7 +213,9 @@ try {
     );
 
     const used = new Set();
-    for (const file of files.filter((f) => f.endsWith('.js') && !f.includes(`${path.sep}scripts${path.sep}`))) {
+    for (const file of files.filter(
+      (f) => f.endsWith('.js') && !f.includes(`${path.sep}scripts${path.sep}`)
+    )) {
       const src = fs.readFileSync(file, 'utf8');
       for (const m of src.matchAll(/process\.env\.([A-Z][A-Z0-9_]+)/g)) used.add(m[1]);
       for (const m of src.matchAll(/process\.env\[['"]([A-Z][A-Z0-9_]+)['"]\]/g)) used.add(m[1]);
@@ -137,7 +232,9 @@ try {
   warnings.push(`Could not audit .env.example: ${err.message}`);
 }
 
-/* 4. JSON validity */
+/* ================================================================== *
+ * 4. JSON validity
+ * ================================================================== */
 for (const file of files.filter((f) => f.endsWith('.json'))) {
   try {
     JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -146,20 +243,75 @@ for (const file of files.filter((f) => f.endsWith('.json'))) {
   }
 }
 
-/* 5. Admin route wired */
+/* ================================================================== *
+ * 5. Routing wired correctly
+ * ================================================================== */
 try {
   const vercel = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
-  const hasAdmin = vercel.rewrites?.some((r) => r.source === '/pandaviki001stores');
-  if (!hasAdmin) errors.push('vercel.json is missing the /pandaviki001stores rewrite');
+  const sources = new Set((vercel.rewrites || []).map((r) => r.source));
+
+  if (!sources.has('/pandaviki001stores')) {
+    errors.push('vercel.json is missing the /pandaviki001stores rewrite');
+  }
+
+  // Every function must be reachable from at least one rewrite or be a
+  // directly-addressable /api/<name> endpoint (products, config, health…).
+  const directlyAddressable = new Set(['/api/health', '/api/config', '/api/products', '/api/cloudinary-public']);
+  for (const fn of functions) {
+    const name = fn.replace(/^api\//, '').replace(/\.js$/, '');
+    const direct = `/api/${name}`;
+    const covered =
+      directlyAddressable.has(direct) ||
+      (vercel.rewrites || []).some((r) => (r.destination || '').startsWith(direct));
+    if (!covered) warnings.push(`${fn} has no route in vercel.json (unreachable)`);
+  }
+
+  // The public API URLs the front-end calls must all resolve — either
+  // directly as /api/<name>.js, or through a rewrite in vercel.json.
+  const REQUIRED_API_URLS = [
+    '/api/config',
+    '/api/products/:id',
+    '/api/admin/login',
+    '/api/admin/products',
+    '/api/admin/settings',
+    '/api/admin/cloudinary-signature',
+    '/api/admin/stats',
+    '/api/admin/reviews',
+    '/api/admin/orders',
+    '/api/admin/bulk-stock',
+    '/api/submit/sell',
+    '/api/submit/contact',
+  ];
+  for (const url of REQUIRED_API_URLS) {
+    const directName = `/api/${url.replace(/^\/api\//, '').split('/')[0]}`;
+    const servedDirectly = fs.existsSync(path.join(ROOT, `${directName}.js`));
+    if (!sources.has(url) && !servedDirectly) {
+      errors.push(`vercel.json has no rewrite for ${url}`);
+    }
+  }
 } catch {
   errors.push('Could not parse vercel.json');
 }
 
-/* report */
-const apiRoot = path.join(ROOT, 'api') + path.sep;
-const apiCount = files.filter((f) => f.startsWith(apiRoot) && f.endsWith('.js')).length;
-console.log(`\nFiles checked: ${files.length}`);
-console.log(`API routes:    ${apiCount}`);
+/* ================================================================== *
+ * 6. Node engine pin (Vercel rejects discontinued runtimes)
+ * ================================================================== */
+try {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const node = pkg.engines?.node || '';
+  if (!node.startsWith('24')) {
+    warnings.push(`package.json engines.node is "${node || 'unset'}" — Vercel expects 24.x`);
+  }
+} catch {
+  /* already reported by the JSON check */
+}
+
+/* ================================================================== *
+ * report
+ * ================================================================== */
+console.log(`\nFiles checked:   ${files.length}`);
+console.log(`Serverless fns:  ${functions.length} / ${MAX_FUNCTIONS} (Vercel Hobby limit)`);
+functions.forEach((fn) => console.log(`   · ${fn}`));
 
 if (warnings.length) {
   console.log('\nWarnings:');
@@ -173,4 +325,6 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log('\nBuild check passed - ready to deploy.\n');
+console.log(
+  `\nBuild check passed — ${functions.length} serverless function${functions.length === 1 ? '' : 's'}, ready to deploy.\n`
+);

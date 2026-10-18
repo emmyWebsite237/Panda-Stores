@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Gaming Accounts — Search &amp; Filter | Panda Gaming Store</title>
+<meta name="description" content="Browse every verified gaming account in stock. Filter by game, price and availability, then buy on WhatsApp in minutes.">
+<meta name="theme-color" content="#070A11">
+<meta property="og:title" content="Shop Gaming Accounts | Panda Gaming Store">
+<meta property="og:description" content="Filter verified Free Fire, Call of Duty, PUBG Mobile, Valorant and Blood Strike accounts by game, price and availability.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/products/cover-2.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
+
+<main>
+  <div class="wrap">
+    <div class="shop-hero">
+      <div class="eyebrow">🎮 Live inventory</div>
+      <h1>Find your next account</h1>
+      <p>Every listing is in stock and checked before it goes live. Search by title, filter by game, price or availability — prices show in Naira with the USD figure underneath.</p>
+    </div>
+
+    <!-- ===================== TOOLBAR ===================== -->
+    <div class="shop-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.3 4.3-1.3 1.3-4.3-4.3A7.5 7.5 0 1 1 10.5 3Zm0 1.8a5.7 5.7 0 1 0 0 11.4 5.7 5.7 0 0 0 0-11.4Z"/></svg>
+        <input class="input" type="search" id="searchInput" placeholder="Search accounts, ranks, skins…" aria-label="Search accounts" autocomplete="off">
+      </div>
+      <select class="select" id="sortSelect" aria-label="Sort accounts">
+        <option value="recommended">Recommended</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="newest">Newest first</option>
+        <option value="rating">Highest rated</option>
+      </select>
+    </div>
+
+    <!-- ===================== FILTERS ===================== -->
+    <div class="filter-panel">
+      <div class="filter-group">
+        <span class="filter-label">Game</span>
+        <div class="chip-row" id="gameChips"></div>
+
+        <span class="filter-label" style="margin-top:16px;">Price range (USD)</span>
+        <div class="price-range">
+          <input class="input" type="number" id="priceMin" min="0" step="1" placeholder="Min">
+          <span class="sep">to</span>
+          <input class="input" type="number" id="priceMax" min="0" step="1" placeholder="Max">
+        </div>
+      </div>
+
+      <div class="filter-side">
+        <label class="toggle-row">
+          <input type="checkbox" id="inStockOnly" checked>
+          In stock only
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="featuredOnly">
+          Featured only
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="wishlistOnly">
+          My favourites
+        </label>
+      </div>
+    </div>
+
+    <div class="result-line">
+      <span id="resultCount">Loading accounts…</span>
+      <button class="clear-filters" id="clearFilters" type="button" hidden>Clear all filters</button>
+    </div>
+
+    <div class="shop-grid" id="shopGrid">
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+      <div class="skeleton sk-card"></div>
+    </div>
+
+    <div style="padding:clamp(36px,5vw,60px) 0;">
+      <div class="cta-band">
+        <h2>Can't find the account you want?</h2>
+        <p>Tell us the game, rank and budget — we source specific accounts on request.</p>
+        <div class="cta-btns">
+          <a href="/contact" class="btn btn-primary btn-lg">Request an account</a>
+          <a href="#" data-wa="Hi! I am looking for a specific gaming account — can you help?" class="btn btn-ghost btn-lg">Ask on WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: 'shop' });
+  const products = state.products || [];
+
+  const params = new URLSearchParams(window.location.search);
+
+  const filters = {
+    game: params.get('game') || 'all',
+    q: params.get('q') || '',
+    min: params.get('min') || '',
+    max: params.get('max') || '',
+    inStock: params.get('inStock') !== '0',
+    featured: params.get('featured') === '1',
+    wishlist: params.get('wishlist') === '1',
+    sort: params.get('sort') || 'recommended',
+  };
+
+  const grid = document.getElementById('shopGrid');
+  const gameChips = document.getElementById('gameChips');
+  const resultCount = document.getElementById('resultCount');
+  const clearBtn = document.getElementById('clearFilters');
+
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
+  const priceMin = document.getElementById('priceMin');
+  const priceMax = document.getElementById('priceMax');
+  const inStockOnly = document.getElementById('inStockOnly');
+  const featuredOnly = document.getElementById('featuredOnly');
+  const wishlistOnly = document.getElementById('wishlistOnly');
+
+  searchInput.value = filters.q;
+  sortSelect.value = filters.sort;
+  priceMin.value = filters.min;
+  priceMax.value = filters.max;
+  inStockOnly.checked = filters.inStock;
+  featuredOnly.checked = filters.featured;
+  wishlistOnly.checked = filters.wishlist;
+
+  const games = ['all', ...new Set(products.map((p) => p.game).filter(Boolean))];
+
+  function paintGames() {
+    gameChips.innerHTML = games
+      .map((g) => {
+        const label = g === 'all' ? 'All games' : g;
+        return `<button class="chip ${g === filters.game ? 'active' : ''}" type="button" data-game="${A.esc(
+          g
+        )}" aria-pressed="${g === filters.game}">${A.esc(label)}</button>`;
+      })
+      .join('');
+  }
+
+  function apply() {
+    let list = products.slice();
+
+    if (filters.game !== 'all') list = list.filter((p) => p.game === filters.game);
+    if (filters.inStock) list = list.filter((p) => Number(p.stock) > 0);
+    if (filters.featured) list = list.filter((p) => p.featured);
+    if (filters.wishlist) {
+      const saved = A.wishlist();
+      list = list.filter((p) => saved.includes(p.id));
+    }
+
+    if (filters.q) {
+      const q = filters.q.toLowerCase();
+      list = list.filter((p) =>
+        `${p.title} ${p.game}`.toLowerCase().includes(q)
+      );
+    }
+
+    const min = filters.min === '' ? null : Number(filters.min);
+    const max = filters.max === '' ? null : Number(filters.max);
+    if (min !== null && !Number.isNaN(min)) list = list.filter((p) => p.priceUsd >= min);
+    if (max !== null && !Number.isNaN(max)) list = list.filter((p) => p.priceUsd <= max);
+
+    if (filters.sort === 'price-asc') list.sort((a, b) => a.priceUsd - b.priceUsd);
+    else if (filters.sort === 'price-desc') list.sort((a, b) => b.priceUsd - a.priceUsd);
+    else if (filters.sort === 'newest')
+      list.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    else if (filters.sort === 'rating')
+      list.sort((a, b) => (b.rating || 0) - (a.rating || 0) || b.reviewCount - a.reviewCount);
+    else
+      list.sort(
+        (a, b) => Number(b.featured) - Number(a.featured) || (b.rating || 0) - (a.rating || 0)
+      );
+
+    return list;
+  }
+
+  function syncUrl() {
+    const q = new URLSearchParams();
+    if (filters.game !== 'all') q.set('game', filters.game);
+    if (filters.q) q.set('q', filters.q);
+    if (filters.min !== '') q.set('min', filters.min);
+    if (filters.max !== '') q.set('max', filters.max);
+    if (!filters.inStock) q.set('inStock', '0');
+    if (filters.featured) q.set('featured', '1');
+    if (filters.wishlist) q.set('wishlist', '1');
+    if (filters.sort !== 'recommended') q.set('sort', filters.sort);
+    const qs = q.toString();
+    window.history.replaceState(null, '', qs ? `/shop?${qs}` : '/shop');
+  }
+
+  function paint() {
+    const list = apply();
+
+    resultCount.innerHTML = list.length
+      ? `<strong>${list.length}</strong> account${list.length === 1 ? '' : 's'}${
+          filters.game !== 'all' ? ` in ${A.esc(filters.game)}` : ''
+        } · prices in ₦ with USD below`
+      : 'No accounts match those filters.';
+
+    const isFiltered =
+      filters.game !== 'all' ||
+      filters.q ||
+      filters.min !== '' ||
+      filters.max !== '' ||
+      !filters.inStock ||
+      filters.featured ||
+      filters.wishlist ||
+      filters.sort !== 'recommended';
+    clearBtn.hidden = !isFiltered;
+
+    if (!list.length) {
+      grid.innerHTML = `<div class="no-results">
+        <div class="ico">🎮</div>
+        <strong>No accounts match those filters</strong>
+        <p>Try widening the price range, or ask us to source one for you.</p>
+        <a class="btn btn-primary btn-sm" href="#" data-wa="Hi! I am looking for a specific gaming account — can you help?">Request an account</a>
+      </div>`;
+      const wa = document.querySelector('[data-wa]');
+      if (wa) {
+        wa.setAttribute('href', A.waLink(wa.getAttribute('data-wa')));
+        wa.setAttribute('target', '_blank');
+        wa.setAttribute('rel', 'noopener');
+      }
+      return;
+    }
+
+    grid.innerHTML = list.map(A.productCard).join('');
+    A.wireWishlistButtons(grid);
+  }
+
+  /* --------------------------- events --------------------------- */
+  let searchTimer = null;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      filters.q = searchInput.value.trim();
+      syncUrl();
+      paint();
+    }, 180);
+  });
+
+  sortSelect.addEventListener('change', () => {
+    filters.sort = sortSelect.value;
+    syncUrl();
+    paint();
+  });
+
+  [priceMin, priceMax].forEach((el) => {
+    el.addEventListener('input', () => {
+      filters.min = priceMin.value;
+      filters.max = priceMax.value;
+      syncUrl();
+      paint();
+    });
+  });
+
+  inStockOnly.addEventListener('change', () => {
+    filters.inStock = inStockOnly.checked;
+    syncUrl();
+    paint();
+  });
+  featuredOnly.addEventListener('change', () => {
+    filters.featured = featuredOnly.checked;
+    syncUrl();
+    paint();
+  });
+  wishlistOnly.addEventListener('change', () => {
+    filters.wishlist = wishlistOnly.checked;
+    syncUrl();
+    paint();
+  });
+
+  gameChips.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    filters.game = chip.dataset.game;
+    paintGames();
+    syncUrl();
+    paint();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    Object.assign(filters, {
+      game: 'all',
+      q: '',
+      min: '',
+      max: '',
+      inStock: true,
+      featured: false,
+      wishlist: false,
+      sort: 'recommended',
+    });
+    searchInput.value = '';
+    sortSelect.value = 'recommended';
+    priceMin.value = '';
+    priceMax.value = '';
+    inStockOnly.checked = true;
+    featuredOnly.checked = false;
+    wishlistOnly.checked = false;
+    paintGames();
+    syncUrl();
+    paint();
+  });
+
+  // Keep the grid honest when favourites change in another card.
+  document.addEventListener('panda:wishlist', () => {
+    if (filters.wishlist) paint();
+  });
+
+  paintGames();
+  paint();
+})();
+</script>
+</body>
+</html>

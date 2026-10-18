@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Reviews &amp; Ratings | Panda Gaming Store</title>
+<meta name="description" content="Real reviews from buyers and sellers on Panda Gaming Store, with an honest average rating and every listing they bought.">
+<meta name="theme-color" content="#070A11">
+<meta property="og:title" content="Customer Reviews | Panda Gaming Store">
+<meta property="og:description" content="Real reviews from verified buyers and sellers, with an honest average rating.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/products/cover-6.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
+</head>
+<body>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div data-header></div>
+
+<main>
+  <div class="wrap">
+    <div class="page-hero">
+      <div class="eyebrow">💬 Verified buyers</div>
+      <h1>What our buyers say</h1>
+      <p>Every review below came from someone who actually completed an order. No bought stars, no filler testimonials.</p>
+    </div>
+
+    <section style="padding-top:0;">
+      <div class="rating-summary" id="ratingSummary" hidden>
+        <div class="rating-big">
+          <div class="n" id="avgRating">—</div>
+          <div class="stars" id="avgStars">☆☆☆☆☆</div>
+          <div class="c" id="avgCount">—</div>
+        </div>
+        <div class="rating-bars" id="ratingBars"></div>
+      </div>
+
+      <div class="review-list" id="allReviews">
+        <div class="skeleton" style="height:150px;"></div>
+        <div class="skeleton" style="height:150px;"></div>
+      </div>
+
+      <div class="center" style="margin-top:30px;">
+        <p style="color:var(--text-dim); font-size:.9rem; margin-bottom:16px;">Bought something from us? We would love your feedback.</p>
+        <a href="" data-wa="Hi! I would like to leave a review for an account I bought." class="btn btn-primary">Leave a review</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div data-footer></div>
+<div data-floaters></div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function () {
+  const A = window.PandaApp;
+  const state = await A.init({ active: 'reviews' });
+  const reviews = state.reviews || [];
+
+  const host = document.getElementById('allReviews');
+  if (!reviews.length) {
+    host.innerHTML = '<div class="review-empty">No reviews published yet — they will appear here as buyers submit them.</div>';
+    return;
+  }
+
+  // The public config sends the newest 12; render them with product context.
+  const byId = new Map((state.products || []).map((p) => [p.id, p]));
+  host.innerHTML = reviews
+    .map((r) => {
+      const p = byId.get(r.productId);
+      const card = A.reviewCard(r);
+      if (!p) return card;
+      return card.replace(
+        '<p class="review-body">',
+        `<a href="/account/${encodeURIComponent(p.id)}" class="review-product">${A.esc(
+          p.title
+        )}</a><p class="review-body">`
+      );
+    })
+    .join('');
+
+  /* ------------------------ rating summary ------------------------ */
+  const summary = document.getElementById('ratingSummary');
+  const avg = state.siteRating || { rating: 0, reviewCount: 0 };
+  if (avg.reviewCount) {
+    summary.hidden = false;
+    document.getElementById('avgRating').textContent = avg.rating.toFixed(1);
+    document.getElementById('avgStars').textContent = A.stars(avg.rating);
+    document.getElementById('avgCount').textContent = `${avg.reviewCount} review${
+      avg.reviewCount === 1 ? '' : 's'
+    }`;
+
+    const bars = document.getElementById('ratingBars');
+    bars.innerHTML = [5, 4, 3, 2, 1]
+      .map((star) => {
+        const n = reviews.filter((r) => Number(r.rating) === star).length;
+        const pct = reviews.length ? Math.round((n / reviews.length) * 100) : 0;
+        return `<div class="rating-bar-row">
+          <span>${star}★</span>
+          <span class="rating-bar"><span style="width:${pct}%"></span></span>
+          <span>${n}</span>
+        </div>`;
+      })
+      .join('');
+  }
+})();
+</script>
+</body>
+</html>

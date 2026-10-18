@@ -3,73 +3,70 @@
   "framework": null,
   "cleanUrls": true,
   "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/pandaviki001stores",
-      "destination": "/pandaviki001stores.html"
-    },
-    {
-      "source": "/pandaviki001stores/(.*)",
-      "destination": "/pandaviki001stores.html"
-    },
-    {
-      "source": "/account/:id",
-      "destination": "/product.html?id=:id"
-    },
-    {
-      "source": "/sell-account",
-      "destination": "/sell.html"
-    },
-    {
-      "source": "/support",
-      "destination": "/contact.html"
+  "functions": {
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
+  },
+  "rewrites": [
+    { "source": "/api/admin/login", "destination": "/api/admin?action=login" },
+    { "source": "/api/admin/logout", "destination": "/api/admin?action=logout" },
+    { "source": "/api/admin/session", "destination": "/api/admin?action=session" },
+    { "source": "/api/admin/products", "destination": "/api/admin?action=products" },
+    { "source": "/api/admin/settings", "destination": "/api/admin?action=settings" },
+    {
+      "source": "/api/admin/cloudinary-signature",
+      "destination": "/api/admin?action=cloudinary-signature"
+    },
+    { "source": "/api/admin/stats", "destination": "/api/admin?action=stats" },
+    { "source": "/api/admin/reviews", "destination": "/api/admin?action=reviews" },
+    { "source": "/api/admin/orders", "destination": "/api/admin?action=orders" },
+    { "source": "/api/admin/bulk-stock", "destination": "/api/admin?action=bulk-stock" },
+
+    { "source": "/api/products/:id", "destination": "/api/product?id=:id" },
+
+    { "source": "/api/submit/sell", "destination": "/api/submit?kind=sell" },
+    { "source": "/api/submit/contact", "destination": "/api/submit?kind=contact" },
+    { "source": "/api/submit/order", "destination": "/api/submit?kind=order" },
+
+    { "source": "/pandaviki001stores", "destination": "/pandaviki001stores.html" },
+    { "source": "/pandaviki001stores/(.*)", "destination": "/pandaviki001stores.html" },
+
+    { "source": "/shop", "destination": "/shop.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/faq", "destination": "/faq.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/reviews", "destination": "/reviews.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/support", "destination": "/contact.html" },
+    { "source": "/sell", "destination": "/sell.html" },
+    { "source": "/sell-account", "destination": "/sell.html" },
+    { "source": "/account/:id", "destination": "/product.html?id=:id" },
+    { "source": "/product/:id", "destination": "/product.html?id=:id" }
   ],
   "headers": [
     {
       "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "no-store, max-age=0" }]
     },
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "SAMEORIGIN"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
       ]
     },
     {
       "source": "/images/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
     }
-  ],
-  "outputDirectory": "."
+  ]
 }

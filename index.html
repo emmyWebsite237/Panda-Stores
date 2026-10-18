@@ -3,16 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panda Gaming Store — Verified Gaming Accounts</title>
-<meta name="description" content="Buy verified Free Fire, Call of Duty, PUBG Mobile, Blood Strike and Valorant accounts. Instant WhatsApp delivery, real inventories, honest pricing.">
+<title>Panda Gaming Store — Verified Gaming Accounts, Delivered Fast</title>
+<meta name="description" content="Buy verified Free Fire, Call of Duty, PUBG Mobile, Blood Strike and Valorant accounts. Real inventories, honest pricing, instant WhatsApp delivery and a support team that replies.">
 <meta name="theme-color" content="#070A11">
 <meta property="og:title" content="Panda Gaming Store — Verified Gaming Accounts">
 <meta property="og:description" content="Hand-checked gaming accounts with real inventories and instant WhatsApp delivery.">
 <meta property="og:type" content="website">
+<meta property="og:image" content="/images/products/cover-1.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Panda Gaming Store — Verified Gaming Accounts">
+<meta name="twitter:description" content="Hand-checked gaming accounts with real inventories and instant WhatsApp delivery.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/pages.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐼</text></svg>">
 </head>
 <body>
@@ -27,13 +32,13 @@
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow"><span class="pulse-dot"></span> <span data-announcement>Fresh drops every week</span></div>
-        <h1 id="heroHeadline">Level up without <span class="accent">the grind.</span></h1>
-        <p class="lead" id="heroSubline">
+        <h1 id="heroHeadline" data-hero-headline>Level up without <span class="accent">the grind.</span></h1>
+        <p class="lead" data-hero-subline>
           Hand-checked gaming accounts with real inventories, instant WhatsApp delivery and a support team that actually replies.
         </p>
         <div class="hero-ctas">
-          <a href="#marketplace" class="btn btn-primary btn-lg">Browse accounts</a>
-          <a href="/sell-account" class="btn btn-ghost btn-lg">Sell your account</a>
+          <a href="/shop" class="btn btn-primary btn-lg">Browse accounts</a>
+          <a href="/sell" class="btn btn-ghost btn-lg">Sell your account</a>
         </div>
         <div class="trust-row">
           <div class="trust-item"><span class="n">100%</span> Verified listings</div>
@@ -80,8 +85,70 @@
     </div>
   </div>
 
+  <!-- ========================= TRUST BADGES ========================= -->
+  <section>
+    <div class="wrap">
+      <div class="trust-grid">
+        <div class="trust-card">
+          <div class="ico">✅</div>
+          <h4>Checked before listing</h4>
+          <p>Every account is opened, screenshotted and verified before it appears here.</p>
+        </div>
+        <div class="trust-card">
+          <div class="ico">⚡</div>
+          <h4>Minutes, not days</h4>
+          <p>Payment confirmed on WhatsApp, credentials released straight after.</p>
+        </div>
+        <div class="trust-card">
+          <div class="ico">🔒</div>
+          <h4>Secure handover</h4>
+          <p>Email and recovery details transferred with you, while you're on chat.</p>
+        </div>
+        <div class="trust-card">
+          <div class="ico">💬</div>
+          <h4>Real support</h4>
+          <p>24 hours of post-sale help to lock the account down properly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= FEATURED ========================= -->
+  <section style="padding-top:0;">
+    <div class="wrap">
+      <div class="rail-head">
+        <div>
+          <div class="eyebrow" style="margin-bottom:10px;">🔥 Hand-picked</div>
+          <h2>Featured accounts</h2>
+          <p>In stock right now. Naira prices follow the live store rate.</p>
+        </div>
+        <a href="/shop" class="btn btn-ghost">See all accounts →</a>
+      </div>
+      <div class="product-rail" id="featuredRail">
+        <div class="skeleton sk-card" style="height:300px;"></div>
+        <div class="skeleton sk-card" style="height:300px;"></div>
+        <div class="skeleton sk-card" style="height:300px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= MY WISHLIST ========================= -->
+  <section id="wishlistSection" style="padding-top:0;" hidden>
+    <div class="wrap">
+      <div class="rail-head">
+        <div>
+          <div class="eyebrow" style="margin-bottom:10px;">❤️ Saved</div>
+          <h2>Your favourites</h2>
+          <p>Saved on this device — pick up where you left off.</p>
+        </div>
+        <a href="/shop" class="btn btn-ghost btn-sm">Browse more</a>
+      </div>
+      <div class="product-rail" id="wishRail"></div>
+    </div>
+  </section>
+
   <!-- ========================= HOW IT WORKS ========================= -->
-  <section id="how">
+  <section>
     <div class="wrap">
       <div class="section-head">
         <div class="eyebrow">⚡ Three steps</div>
@@ -109,23 +176,9 @@
           <p>One tap sends us your order with the code attached. Pay, receive the credentials, and you're in.</p>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ========================= MARKETPLACE ========================= -->
-  <section id="marketplace" style="background:linear-gradient(180deg,rgba(255,255,255,.02),transparent); border-top:1px solid var(--panel-line); border-bottom:1px solid var(--panel-line);">
-    <div class="wrap">
-      <div class="section-head">
-        <div class="eyebrow">🔥 Live inventory</div>
-        <h2>Accounts ready to hand over</h2>
-        <p>Every listing below is in stock right now. Naira prices follow the store rate; the USD price is shown underneath.</p>
-      </div>
-
-      <div class="filter-bar" id="filterBar" role="tablist" aria-label="Filter by game"></div>
-      <div class="product-grid" id="productGrid">
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
+      <div class="center" style="margin-top:26px;">
+        <a href="/how-it-works" class="btn btn-ghost">See the full process →</a>
       </div>
     </div>
   </section>
@@ -135,13 +188,13 @@
     <div class="wrap stats-grid">
       <div><div class="stat-num" id="statProducts">—</div><div class="stat-label">Accounts listed</div></div>
       <div><div class="stat-num" id="statStock">—</div><div class="stat-label">Ready to deliver</div></div>
-      <div><div class="stat-num">4.9★</div><div class="stat-label">Average rating</div></div>
+      <div><div class="stat-num" id="statRating">—</div><div class="stat-label">Buyer rating</div></div>
       <div><div class="stat-num">&lt;10m</div><div class="stat-label">Average handover</div></div>
     </div>
   </div>
 
   <!-- ========================== REVIEWS ========================== -->
-  <section id="reviews">
+  <section>
     <div class="wrap">
       <div class="section-head">
         <div class="eyebrow">💬 Real buyers</div>
@@ -149,34 +202,10 @@
         <p>No bots, no fake stars — just players who got exactly what the listing promised.</p>
       </div>
 
-      <div class="review-grid">
-        <div class="review-card">
-          <div class="review-top">
-            <div class="avatar">K</div>
-            <div><div class="review-name">Kayzo_FF</div><div class="review-sub">Bought a Free Fire account</div></div>
-          </div>
-          <div class="stars" style="color:var(--gold); font-size:.8rem; margin-bottom:10px;">★★★★★</div>
-          <p class="review-body">Paid on WhatsApp, got the credentials in under ten minutes. The inventory was exactly what the screenshots showed.</p>
-          <span class="review-verified">✓ VERIFIED PURCHASE</span>
-        </div>
-        <div class="review-card">
-          <div class="review-top">
-            <div class="avatar">N</div>
-            <div><div class="review-name">NovaStrikes</div><div class="review-sub">Sold a COD account</div></div>
-          </div>
-          <div class="stars" style="color:var(--gold); font-size:.8rem; margin-bottom:10px;">★★★★★</div>
-          <p class="review-body">Submitted my account at night, had a fair offer the next morning. No lowballing, no games — just a clean deal.</p>
-          <span class="review-verified">✓ VERIFIED SELLER</span>
-        </div>
-        <div class="review-card">
-          <div class="review-top">
-            <div class="avatar">R</div>
-            <div><div class="review-name">Ribbit_PUBG</div><div class="review-sub">Bought a PUBG account</div></div>
-          </div>
-          <div class="stars" style="color:var(--gold); font-size:.8rem; margin-bottom:10px;">★★★★★</div>
-          <p class="review-body">Smooth handover and they stayed on chat while I changed the login details. That's the part nobody else does.</p>
-          <span class="review-verified">✓ VERIFIED PURCHASE</span>
-        </div>
+      <div class="review-grid" id="homeReviews"></div>
+
+      <div class="center" style="margin-top:26px;">
+        <a href="/reviews" class="btn btn-ghost">Read all reviews →</a>
       </div>
     </div>
   </section>
@@ -188,8 +217,8 @@
         <h2>Ready to skip the grind?</h2>
         <p>Browse the live inventory, or turn an idle account into cash today.</p>
         <div class="cta-btns">
-          <a href="#marketplace" class="btn btn-primary btn-lg">Browse accounts</a>
-          <a href="/sell-account" class="btn btn-ghost btn-lg">Sell your account</a>
+          <a href="/shop" class="btn btn-primary btn-lg">Browse accounts</a>
+          <a href="/sell" class="btn btn-ghost btn-lg">Sell your account</a>
         </div>
       </div>
     </div>
@@ -200,93 +229,69 @@
 <div data-footer></div>
 <div data-floaters></div>
 
-<!-- ====================== TERMS MODAL ====================== -->
-<div class="modal-scrim" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
-  <div class="modal">
-    <div class="modal-head">
-      <div>
-        <h3 id="termsTitle">Purchase terms</h3>
-        <p>Please read before we release an account.</p>
-      </div>
-      <button class="modal-x" data-close-terms aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="terms-text" id="termsBody">Loading terms…</div>
-    </div>
-    <div class="modal-foot">
-      <a href="/#marketplace" class="btn btn-primary btn-block" data-close-terms>Got it</a>
-    </div>
-  </div>
-</div>
-
 <script src="/assets/app.js"></script>
 <script>
 (async function () {
   const A = window.PandaApp;
-  const state = await A.init({ active: 'marketplace' });
-  const s = state.settings || {};
+  const state = await A.init({ active: 'home' });
+  const products = state.products || [];
 
-  // Live copy from settings
-  if (s.heroHeadline) {
-    document.getElementById('heroHeadline').innerHTML = A.esc(s.heroHeadline).replace(/grind\.?$/i, '<span class="accent">grind.</span>');
+  // Keep the accent on the last word of a custom headline.
+  if (state.settings?.heroHeadline) {
+    const el = document.getElementById('heroHeadline');
+    el.innerHTML = A.esc(state.settings.heroHeadline).replace(
+      /(\S+)(\s*)$/,
+      '<span class="accent">$1</span>'
+    );
   }
-  if (s.heroSubline) document.getElementById('heroSubline').textContent = s.heroSubline;
 
-  // Demo hero prices follow the admin exchange rate
+  // Hero demo prices follow the admin exchange rate
   document.querySelectorAll('[data-demo-price]').forEach((el) => {
     el.textContent = A.nairaFrom(el.getAttribute('data-demo-price'));
   });
 
-  const grid = document.getElementById('productGrid');
-  const filterBar = document.getElementById('filterBar');
-  const products = state.products || [];
-
-  const games = ['all', ...new Set(products.map((p) => p.game).filter(Boolean))];
-  let activeGame = 'all';
-
-  function paintFilters() {
-    filterBar.innerHTML = games
-      .map((g) => {
-        const label = g === 'all' ? 'All games' : g;
-        return `<button class="chip ${g === activeGame ? 'active' : ''}" data-game="${A.esc(g)}" role="tab" aria-selected="${g === activeGame}">${A.esc(label)}</button>`;
-      })
-      .join('');
+  /* ------------------------- featured rail ------------------------- */
+  const rail = document.getElementById('featuredRail');
+  if (products.length) {
+    const featured = products.filter((p) => p.featured);
+    const list = (featured.length ? featured : products).slice(0, 8);
+    rail.innerHTML = list.map(A.productCard).join('');
+    A.wireWishlistButtons(rail);
+  } else {
+    rail.innerHTML = '<div class="rail-empty">No accounts listed yet — check back shortly, or message us on WhatsApp.</div>';
   }
 
-  function paintGrid() {
-    const list = activeGame === 'all' ? products : products.filter((p) => p.game === activeGame);
-    if (!list.length) {
-      grid.innerHTML = `<div class="empty-state">
-        <div style="font-size:34px;margin-bottom:10px;">🎮</div>
-        <strong>No accounts in this game yet</strong>
-        <p style="margin:8px 0 16px;font-size:.86rem;">Message us and we'll source one for you.</p>
-        <a class="btn btn-primary btn-sm" href="#" data-wa>Request an account</a>
-      </div>`;
-      document.querySelectorAll('[data-wa]').forEach((el) => {
-        if (!el.getAttribute('href')) {
-          el.setAttribute('href', A.waLink('Hi! I am looking for an account — can you help me find one?'));
-          el.setAttribute('target', '_blank');
-        }
-      });
+  /* ------------------------- wishlist rail ------------------------- */
+  function paintWishlist() {
+    const section = document.getElementById('wishlistSection');
+    const railEl = document.getElementById('wishRail');
+    const saved = A.productsByIds(A.wishlist()).slice(0, 8);
+    if (!saved.length) {
+      section.hidden = true;
       return;
     }
-    grid.innerHTML = list.map(A.productCard).join('');
+    section.hidden = false;
+    railEl.innerHTML = saved.map(A.productCard).join('');
+    A.wireWishlistButtons(railEl);
   }
+  paintWishlist();
+  document.addEventListener('panda:wishlist', paintWishlist);
 
-  paintFilters();
-  paintGrid();
-
-  filterBar.addEventListener('click', (e) => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    activeGame = chip.dataset.game;
-    paintFilters();
-    paintGrid();
-  });
-
-  // Stats
+  /* ---------------------------- stats ---------------------------- */
   document.getElementById('statProducts').textContent = products.length;
   document.getElementById('statStock').textContent = products.filter((p) => Number(p.stock) > 0).length;
+  const sr = state.siteRating || {};
+  document.getElementById('statRating').textContent = sr.reviewCount
+    ? `${sr.rating.toFixed(1)}★`
+    : '4.9★';
+
+  /* --------------------------- reviews --------------------------- */
+  const reviewHost = document.getElementById('homeReviews');
+  if (state.reviews?.length) {
+    reviewHost.innerHTML = state.reviews.slice(0, 3).map(A.reviewCard).join('');
+  } else {
+    reviewHost.innerHTML = '<div class="rail-empty" style="grid-column:1/-1;">Reviews will appear here once buyers start leaving them.</div>';
+  }
 })();
 </script>
 </body>

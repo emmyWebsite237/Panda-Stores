@@ -3,8 +3,9 @@
  * Local dev server that emulates Vercel's static + serverless behaviour.
  *   node scripts/dev-server.js [port]
  *
- * Mirrors the rewrites in vercel.json and exposes each file under /api as a
- * handler receiving (req, res) with res.status()/res.json() helpers.
+ * It reads vercel.json at boot and applies the same rewrites Vercel would, so
+ * /api/admin/login, /api/products/:id, /shop and /account/:id all behave
+ * exactly as they do in production. Handlers are the real api/*.js files.
  */
 
 import http from 'node:http';
@@ -21,15 +22,17 @@ function loadEnv() {
   for (const file of ['.env.local', '.env']) {
     const full = path.join(ROOT, file);
     if (!fs.existsSync(full)) continue;
-    const text = fs.readFileSync(full, 'utf8');
-    for (const line of text.split('\n')) {
+    for (const line of fs.readFileSync(full, 'utf8').split('\n')) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
       const eq = trimmed.indexOf('=');
       if (eq < 0) continue;
       const key = trimmed.slice(0, eq).trim();
       let value = trimmed.slice(eq + 1).trim();
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
         value = value.slice(1, -1);
       }
       if (!(key in process.env)) process.env[key] = value;
@@ -45,13 +48,14 @@ const MIME = {
   '.js': 'application/javascript; charset=utf-8',
   '.mjs': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.ico': 'image/x-icon',
-  '.txt': 'text/plain; charset=utf-8',
   '.map': 'application/json',
 };
 
@@ -71,11 +75,10 @@ function enhanceRes(res) {
     return res;
   };
   res.json = (obj) => {
-    const body = JSON.stringify(obj);
     if (!res.getHeader('Content-Type')) {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
     }
-    res.end(body);
+    res.end(JSON.stringify(obj));
     return res;
   };
   res.send = (body) => {
@@ -85,63 +88,100 @@ function enhanceRes(res) {
   return res;
 }
 
-function parseUrl(req) {
-  return new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+/* --------------------------- rewrite engine --------------------------- */
+
+const CONFIG = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
+
+/**
+ * Compile a Vercel source pattern ("/api/products/:id", "/pandaviki001stores/(.*)")
+ * into a matcher. Returns { match(pathname) -> params | null }.
+ */
+function compileSource(source) {
+  const names = [];
+  let pattern = source
+    .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex chars except * : ( )
+    .replace(/\\\(\.\*\\\)/g, '__WILD__') // already-escaped (.*) came from the line above
+    .replace(/\(\.\*\)/g, '__WILD__')
+    .replace(/:([A-Za-z0-9_]+)/g, (_, name) => {
+      names.push(name);
+      return '([^/]+)';
+    })
+    .replace(/__WILD__/g, '(.*)');
+
+  const re = new RegExp(`^${pattern}/?$`);
+  return (pathname) => {
+    const m = pathname.match(re);
+    if (!m) return null;
+    const params = {};
+    names.forEach((name, i) => {
+      params[name] = decodeURIComponent(m[i + 1]);
+    });
+    if (m[m.length - 1] !== undefined && m.length > names.length + 1) {
+      params['*'] = m[m.length - 1];
+    }
+    return params;
+  };
 }
 
-/* --------------------------- api dispatch --------------------------- */
+const REWRITES = (CONFIG.rewrites || []).map((rule) => ({
+  rule,
+  match: compileSource(rule.source),
+}));
 
-const REWRITES = [
-  { pattern: /^\/pandaviki001stores\/?$/, target: () => '/pandaviki001stores.html' },
-  { pattern: /^\/pandaviki001stores\/.+$/, target: () => '/pandaviki001stores.html' },
-  { pattern: /^\/account\/([^/]+)\/?$/, target: (m) => `/product.html?id=${encodeURIComponent(m[1])}` },
-  { pattern: /^\/sell-account\/?$/, target: () => '/sell.html' },
-  { pattern: /^\/support\/?$/, target: () => '/contact.html' },
-];
+/** Apply the first matching rewrite. Returns { pathname, query } or null. */
+function applyRewrite(pathname, searchParams) {
+  for (const { rule, match } of REWRITES) {
+    const params = match(pathname);
+    if (!params) continue;
+
+    let destination = rule.destination;
+    for (const [key, value] of Object.entries(params)) {
+      destination = destination.replace(`:${key}`, value);
+    }
+    if (params['*'] !== undefined) {
+      destination = destination.replace('(.*)', params['*']);
+    }
+
+    const [nextPath, nextQuery] = destination.split('?');
+    const merged = new URLSearchParams(searchParams);
+    if (nextQuery) {
+      for (const [k, v] of new URLSearchParams(nextQuery)) merged.set(k, v);
+    }
+    return { pathname: nextPath, query: merged };
+  }
+  return null;
+}
+
+/* ----------------------------- API ----------------------------- */
+
+const handlerCache = new Map();
 
 async function loadHandler(relPath) {
   const abs = path.join(ROOT, relPath);
   if (!fs.existsSync(abs)) return null;
-  const mod = await import(`${pathToFileURL(abs).href}?t=${Date.now()}`);
-  return mod.default || mod.handler || null;
+  if (handlerCache.has(abs)) return handlerCache.get(abs);
+  const mod = await import(pathToFileURL(abs).href);
+  const handler = mod.default || mod.handler || null;
+  handlerCache.set(abs, handler);
+  return handler;
 }
 
-async function handleApi(req, res, pathname, url) {
-  const trimmed = pathname.replace(/^\/api\//, '').replace(/\/+$/, '');
-  const segments = trimmed.split('/');
-
-  const candidates = [];
-  if (segments.length === 1) {
-    candidates.push(`api/${segments[0]}.js`, `api/${segments[0]}/index.js`);
-  } else {
-    const [dir, ...rest] = segments;
-    candidates.push(`api/${dir}/${rest.join('/')}.js`);
-    if (rest.length === 1) candidates.push(`api/${dir}/[id].js`);
-  }
+async function handleApi(req, res, pathname, query) {
+  // /api/foo  → api/foo.js ; /api/foo/bar → api/foo.js (query carries the rest)
+  const segments = pathname.replace(/^\/api\//, '').split('/').filter(Boolean);
+  const candidates = [`api/${segments[0]}.js`, `api/${segments.join('/')}.js`];
 
   let handler = null;
-  let usedPath = null;
   for (const candidate of candidates) {
     handler = await loadHandler(candidate);
-    if (handler) {
-      usedPath = candidate;
-      break;
-    }
+    if (handler) break;
   }
 
-  const query = Object.fromEntries(url.searchParams.entries());
   if (!handler) {
-    handler = await loadHandler('api/[...path].js');
-    if (!handler) {
-      res.status(404).json({ ok: false, error: `No API route for ${pathname}` });
-      return;
-    }
-    query.path = segments;
+    return res.status(404).json({ ok: false, error: `No API route for ${pathname}` });
   }
-  if (usedPath && usedPath.includes('[id]')) {
-    query.id = segments[segments.length - 1];
-  }
-  req.query = query;
+
+  req.query = Object.fromEntries(query.entries());
 
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
     const raw = await readBody(req);
@@ -157,53 +197,57 @@ async function handleApi(req, res, pathname, url) {
 
 /* ---------------------------- static ---------------------------- */
 
-function serveStatic(req, res, pathname) {
+function serveFile(res, abs, cacheSeconds) {
+  const ext = path.extname(abs).toLowerCase();
+  res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
+  res.setHeader('Cache-Control', ext === '.html' ? 'no-cache' : `public, max-age=${cacheSeconds}`);
+  // Status is set by the caller (200 normally, 404 for the error page) —
+  // never overwrite it here, or the 404 page would answer 200.
+  fs.createReadStream(abs).pipe(res);
+  return true;
+}
+
+function tryStatic(req, res, pathname, statusCode = 200) {
   let rel = pathname === '/' ? '/index.html' : pathname;
   if (rel.endsWith('/')) rel += 'index.html';
   const abs = path.join(ROOT, path.normalize(rel).replace(/^(\.\.[/\\])+/, ''));
 
   if (!abs.startsWith(ROOT) || !fs.existsSync(abs) || fs.statSync(abs).isDirectory()) return false;
-
-  const ext = path.extname(abs).toLowerCase();
-  res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
-  res.setHeader('Cache-Control', ext === '.html' ? 'no-cache' : 'public, max-age=60');
-  fs.createReadStream(abs).pipe(res);
-  return true;
+  res.statusCode = statusCode;
+  if (statusCode === 404) res.statusMessage = 'Not Found';
+  return serveFile(res, abs, 60);
 }
 
 /* ----------------------------- server ----------------------------- */
 
 const server = http.createServer(async (req, res) => {
-  const url = parseUrl(req);
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(url.pathname);
+  let query = url.searchParams;
 
   try {
+    const rewritten = applyRewrite(pathname, query);
+    if (rewritten) {
+      pathname = rewritten.pathname;
+      query = rewritten.query;
+    }
+
     if (pathname.startsWith('/api/')) {
-      await handleApi(req, res, pathname, url);
+      await handleApi(req, res, pathname, query);
       return;
     }
 
-    for (const rule of REWRITES) {
-      const m = pathname.match(rule.pattern);
-      if (m) {
-        const rewritten = rule.target(m);
-        const [nextPath, nextQuery] = rewritten.split('?');
-        pathname = nextPath;
-        if (nextQuery) {
-          for (const [k, v] of new URLSearchParams(nextQuery)) url.searchParams.set(k, v);
-        }
-        break;
-      }
-    }
+    if (tryStatic(req, res, pathname)) return;
 
-    if (serveStatic(req, res, pathname)) return;
-    if (!path.extname(pathname) && serveStatic(req, res, `${pathname}.html`)) return;
+    // Vercel's cleanUrls: /shop serves shop.html
+    if (!path.extname(pathname) && tryStatic(req, res, `${pathname}.html`)) return;
+
+    // 404 page, preserving the real status code.
+    if (tryStatic(req, res, '/404.html', 404)) return;
 
     res.statusCode = 404;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(
-      `<h1 style="font-family:sans-serif">404 — not found</h1><p style="font-family:sans-serif">${pathname}</p>`
-    );
+    res.end('<h1>404 — not found</h1>');
   } catch (err) {
     console.error('[dev-server]', err);
     if (!res.headersSent) {
@@ -216,6 +260,8 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n🐼  Panda Gaming Store running at http://localhost:${PORT}`);
-  console.log(`    Admin:  http://localhost:${PORT}/pandaviki001stores`);
-  console.log(`    API:    http://localhost:${PORT}/api/health\n`);
+  console.log(`    Admin:   http://localhost:${PORT}/pandaviki001stores`);
+  console.log(`    Shop:    http://localhost:${PORT}/shop`);
+  console.log(`    API:     http://localhost:${PORT}/api/health`);
+  console.log(`    Rewrites loaded: ${REWRITES.length}\n`);
 });

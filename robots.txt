@@ -1,0 +1,11 @@
+# Panda Gaming Store — robots.txt
+
+User-agent: *
+Allow: /
+
+# Admin dashboard must never be indexed.
+Disallow: /pandaviki001stores
+Disallow: /pandaviki001stores.html
+Disallow: /api/
+
+Sitemap: https://pandagamingstore.com/sitemap.xml

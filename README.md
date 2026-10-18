@@ -24,28 +24,70 @@ Runs on **Vercel** as static HTML + serverless functions. No build step, no bund
 
 ## What's included
 
-### Public storefront
+### Public pages
+Every navigation link is a real page with its own URL, `<title>`, meta + Open Graph tags and active nav state — no more `#section` anchors.
+
 | Page | Route | What it does |
 |---|---|---|
-| Home | `/` | Hero, live stats, marquee, how-it-works, filterable product grid, reviews, CTA, footer |
-| Product detail | `/account/:id` | Swipeable gallery (arrows, dots, thumbnails, touch swipe), Naira + USD pricing, terms-gated WhatsApp buy flow, related accounts |
-| Sell your account | `/sell-account` | Full submission form with image upload, FormSubmit delivery, Google Form fallback |
-| Support & contact | `/support` | Complaint / account-request form, direct contact lines, social links |
-| Admin | `/pandaviki001stores` | Password login + product manager + store settings |
+| Home | `/` | Hero, trust badges, featured rail, your favourites rail, how-it-works, live stats, reviews, CTA |
+| Shop | `/shop` | Full catalogue with search, game/price/availability filters, wishlist-only toggle and 5 sort modes |
+| Product detail | `/account/:id` · `/product/:id` | Swipeable gallery, Naira + USD pricing, rating, terms-gated WhatsApp buy, share, save, reviews, related + recently viewed |
+| How it works | `/how-it-works` | Buying and selling processes as numbered flows |
+| Reviews | `/reviews` | Rating summary with distribution bars and every published review |
+| About | `/about` | The store's story and operating rules |
+| FAQ | `/faq` | Accordion FAQ, one panel open at a time |
+| Sell your account | `/sell` · `/sell-account` | Submission form with image upload, FormSubmit delivery, Google Form → WhatsApp fallback |
+| Contact & support | `/contact` · `/support` | Complaint / account-request form plus direct contact lines and socials |
+| Terms | `/terms` | Full purchase & selling terms, driven by admin settings |
+| Privacy | `/privacy` | Privacy policy, driven by admin settings |
+| 404 | any unknown URL | Branded not-found page answering a real 404 |
+| SEO | `/sitemap.xml` · `/robots.txt` | Sitemap of every public page; robots blocks the admin |
 
-Every page is fully responsive (breakpoints at 1080 / 920 / 720 / 560 / 400px) and shares one design system in `assets/style.css`.
+All pages are responsive (breakpoints at 1080 / 920 / 720 / 560 / 400px), share `assets/style.css` + `assets/pages.css`, and render their header, footer and floating buttons from one runtime so navigation can never drift.
+
+### Storefront features
+- **Search + filters + sorting** — live title search (debounced), game chips, USD price range, in-stock / featured / favourites-only toggles, and sort by price, newest or rating. Filter state is written to the URL, so `/shop?game=Free%20Fire&sort=price-asc` is shareable.
+- **Wishlist** — the heart on any card or product page saves to `localStorage`; a "Your favourites" rail appears on the home page.
+- **Recently viewed** — the last 12 product pages you opened, shown as a swipeable rail on every product page.
+- **Ratings & reviews** — every card shows an average star rating; the product page lists that listing's reviews, and `/reviews` has the full picture with distribution bars.
+- **Share** — native share sheet on mobile, clipboard copy on desktop, with a fallback for browsers that support neither.
+- **Related products** — same game first, then anything else in stock.
 
 ### Floating action buttons
-Two fixed circular buttons (call + WhatsApp) sit bottom-right on every public page. Both are generated from admin settings, and they never overlap content on mobile — the layout reserves space via the responsive grid rather than absolute overlaps.
+Two fixed circular buttons (call + WhatsApp) sit bottom-right on every public page, generated from admin settings. The stack gap is sized so the WhatsApp pulse ring never touches the call button, and the layout reserves bottom padding on mobile so they never cover content.
 
 ### Admin dashboard
-- **Password login** — `ADMIN_PASSWORD`, HMAC-signed HttpOnly session cookie, 7-day default lifetime (survives refreshes and redeploys).
+- **Password login** — `ADMIN_PASSWORD`, HMAC-signed HttpOnly session cookie, 7-day lifetime (survives refreshes and redeploys).
+- **Dashboard stats** — in stock, sold out, total inventory value (USD and Naira at the store rate), new enquiries, review count.
 - **Products** — create / edit / delete, title, description, game/category, USD price, stock, delivery code, 2–5 images, featured flag.
+- **Bulk stock** — tick any number of listings and set in stock, mark sold out, or nudge stock up/down in one request.
+- **Reviews manager** — add, edit and delete reviews; the storefront averages them live.
+- **Enquiries log** — every accepted order lands here automatically; track each one through `new → contacted → paid → delivered` (or cancelled).
 - **Image uploads** — straight to Cloudinary from the browser. Click any tile to make it the **cover**; the rest become the gallery.
-- **Store settings** — store name, tagline, hero copy, announcement strip, WhatsApp number, phone, email, Instagram, TikTok, Telegram, support hours, response-time note, location, **USD → NGN rate**, currency note, full terms text, delivery-code toggle, and the two Google Form fallback URLs.
+- **Store settings** — store name, tagline, hero copy, announcement, WhatsApp, phone, email, Instagram, TikTok, Telegram, support hours, response time, location, **USD → NGN rate**, currency note, terms text, privacy text, delivery-code toggle, and the two Google Form fallback URLs.
 - **Setup & status tab** — shows which integrations are live and which env vars are still missing.
 
-Nothing personal is hardcoded in the HTML: the storefront calls `GET /api/config` on load and renders the name, numbers, socials, rate and terms from that response.
+Nothing personal is hardcoded in the HTML: the storefront calls `GET /api/config` on load and renders the name, numbers, socials, rate, terms and privacy text from that response.
+
+---
+
+## Serverless functions (Vercel Hobby limit: 12)
+
+This project ships **7 functions**, comfortably inside the 12-function Hobby allowance. `npm run build` prints the count and **fails the build above 12**, so this can never regress silently.
+
+| Function | Serves |
+|---|---|
+| `api/health.js` | `GET /api/health` |
+| `api/config.js` | `GET /api/config` |
+| `api/cloudinary-public.js` | `GET /api/cloudinary-public` |
+| `api/products.js` | `GET /api/products` |
+| `api/product.js` | `GET /api/products/:id` (via rewrite) |
+| `api/admin.js` | **every** admin route: login, logout, session, products, settings, cloudinary-signature, stats, reviews, orders, bulk-stock |
+| `api/submit.js` | sell, contact and order logging |
+
+Shared code lives in **`lib/`**, not `api/` — Vercel turns every file under `api/` into a deployed function, but anything outside it is just a module. `vercel.json` rewrites keep each public URL exactly as it was (`/api/admin/products`, `/api/products/:id`, `/api/submit/sell`), so the front-end contract never changed.
+
+**Adding an endpoint?** Add a handler to `lib/routes/admin.js` (or `submit.js`) and a route case, then add the rewrite to `vercel.json`. Do not add a new file under `api/` unless you can afford another function.
 
 ---
 
@@ -53,44 +95,44 @@ Nothing personal is hardcoded in the HTML: the storefront calls `GET /api/config
 
 ```
 .
-├── index.html                     # storefront
-├── product.html                   # product detail (/account/:id)
-├── sell.html                      # seller submission (/sell-account)
-├── contact.html                   # support (/support)
+├── index.html                     # home
+├── shop.html                      # /shop
+├── product.html                   # /account/:id, /product/:id
+├── about.html                     # /about
+├── how-it-works.html              # /how-it-works
+├── reviews.html                   # /reviews
+├── faq.html                       # /faq
+├── sell.html                      # /sell, /sell-account
+├── contact.html                   # /contact, /support
+├── terms.html                     # /terms
+├── privacy.html                   # /privacy
+├── 404.html                       # 404 page
+├── sitemap.xml · robots.txt
 ├── pandaviki001stores.html        # admin dashboard
 ├── assets/
-│   ├── style.css                  # design system (replaces the original)
-│   ├── app.js                     # shared runtime: config, formatting, chrome
+│   ├── style.css                  # design system
+│   ├── pages.css                  # components for the expanded page set
+│   ├── app.js                     # shared runtime: config, chrome, wishlist, cards
 │   ├── style.legacy.css           # original stylesheet, kept for reference
 │   └── script.legacy.js           # original script, kept for reference
-├── images/products/               # 6 seed cover images
-├── api/
-│   ├── _lib/
-│   │   ├── seed.js                # default settings + demo products
-│   │   ├── store.js               # Supabase / Upstash / memory adapter
-│   │   ├── auth.js                # signed-cookie admin sessions
-│   │   └── util.js                # body parsing, validation helpers
-│   ├── config.js                  # GET /api/config
-│   ├── health.js                  # GET /api/health
-│   ├── cloudinary-public.js       # GET /api/cloudinary-public (seller uploads)
-│   ├── products/
-│   │   ├── index.js               # GET /api/products
-│   │   └── [id].js                # GET /api/products/:id
-│   ├── admin/
-│   │   ├── login.js               # POST /api/admin/login
-│   │   ├── logout.js              # POST /api/admin/logout
-│   │   ├── session.js             # GET  /api/admin/session
-│   │   ├── products.js            # GET/POST/PUT/DELETE /api/admin/products
-│   │   ├── settings.js            # GET/PUT /api/admin/settings
-│   │   └── cloudinary-signature.js# POST /api/admin/cloudinary-signature
-│   └── submit/
-│       ├── sell.js                # POST /api/submit/sell
-│       └── contact.js             # POST /api/submit/contact
+├── images/products/               # seed cover images
+├── api/                           # 7 serverless functions (thin entry points)
+│   ├── admin.js · submit.js · config.js · health.js
+│   ├── product.js · products.js · cloudinary-public.js
+├── lib/                           # shared modules — NOT deployed as functions
+│   ├── auth.js · store.js · util.js · seed.js · rating.js
+│   └── routes/
+│       ├── admin.js               # all admin actions
+│       ├── submit.js              # sell / contact / order
+│       ├── config.js · health.js · cloudinary-public.js
+│       ├── products-list.js · product-detail.js
 ├── scripts/
-│   ├── dev-server.js              # local Vercel emulator
-│   └── build-check.js             # pre-deploy verification
+│   ├── dev-server.js              # local Vercel emulator (reads vercel.json rewrites)
+│   └── build-check.js             # pre-deploy verification + function-count guard
 ├── vercel.json                    # rewrites + security headers
 ├── .env.example                   # every variable, documented
+├── .nvmrc · .node-version         # Node 24 pins
+├── .gitignore                     # keeps secrets out, keeps .env.example in
 └── package.json
 ```
 
